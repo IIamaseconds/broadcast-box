@@ -16,6 +16,12 @@ interface PlayerProps {
 	onCloseStream?: () => void;
 }
 
+interface FullscreenElement extends HTMLElement {
+	webkitRequestFullscreen?: () => void | Promise<void>;
+	msRequestFullscreen?: () => void | Promise<void>;
+	webkitEnterFullscreen?: () => void;
+}
+
 const Player = (props: PlayerProps) => {
 	const { cinemaMode } = props;
 	const streamKey = decodeURIComponent(props.streamKey).replace(' ', '_')
@@ -71,6 +77,30 @@ const Player = (props: PlayerProps) => {
 		onError: () => setStreamState("Error"),
 	}
 
+	const handleEnterFullscreen = () => {
+		const videoElement = videoRef.current as FullscreenElement | null;
+		if (!videoElement) {
+			return;
+		}
+
+		try {
+			if (videoElement.requestFullscreen) {
+				void videoElement.requestFullscreen().catch((err) => {
+					console.error("VideoPlayer_RequestFullscreen", err);
+				});
+			} else if (videoElement.webkitRequestFullscreen) {
+				void videoElement.webkitRequestFullscreen();
+			} else if (videoElement.msRequestFullscreen) {
+				void videoElement.msRequestFullscreen();
+			} else if (videoElement.webkitEnterFullscreen) {
+				videoElement.webkitEnterFullscreen();
+			}
+		} catch (err) {
+			console.error("VideoPlayer_RequestFullscreen", err)
+		}
+	};
+
+
 	const resetTimer = (isVisible: boolean) => {
 		setVideoOverlayVisible(() => isVisible);
 
@@ -99,8 +129,7 @@ const Player = (props: PlayerProps) => {
 	const handleVideoPlayerDoubleClick = () => {
 		clearTimeout(clickTimeoutRef.current);
 		lastClickTimeRef.current = 0;
-		videoRef.current?.requestFullscreen()
-			.catch(err => console.error("VideoPlayer_RequestFullscreen", err));
+		handleEnterFullscreen();
 	};
 
 	useEffect(() => {
@@ -194,7 +223,7 @@ const Player = (props: PlayerProps) => {
 									<AudioLayerSelectorComponent layers={audioLayers} layerEndpoint={layerEndpointRef.current} hasPacketLoss={false} currentLayer={currentLayersStatus?.videoLayerCurrent ?? ""} />
 								)}
 								<Square2StackIcon onClick={() => videoRef.current?.requestPictureInPicture()} />
-								<ArrowsPointingOutIcon onClick={() => videoRef.current?.requestFullscreen()} />
+								<ArrowsPointingOutIcon onClick={handleEnterFullscreen} />
 							</div>
 						</div>)
 					}
@@ -256,4 +285,3 @@ const Player = (props: PlayerProps) => {
 }
 
 export default Player
-
