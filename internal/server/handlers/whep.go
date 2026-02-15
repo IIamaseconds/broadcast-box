@@ -6,9 +6,12 @@ import (
 	"log"
 	"mime"
 	"net/http"
+	"os"
 	"strings"
 
+	"github.com/glimesh/broadcast-box/internal/environment"
 	"github.com/glimesh/broadcast-box/internal/server/helpers"
+	"github.com/glimesh/broadcast-box/internal/server/webhook"
 	"github.com/glimesh/broadcast-box/internal/webrtc"
 	"github.com/glimesh/broadcast-box/internal/webrtc/utils"
 )
@@ -54,6 +57,14 @@ func WhepHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	if token == "" {
 		helpers.LogHttpError(responseWriter, "Authorization was invalid", http.StatusUnauthorized)
 		return
+	}
+
+	if webhookUrl := os.Getenv(environment.WEBHOOK_URL); webhookUrl != "" {
+		token, err = webhook.CallWebhook(webhookUrl, webhook.WhepConnect, token, request)
+		if err != nil {
+			responseWriter.WriteHeader(http.StatusUnauthorized)
+			return
+		}
 	}
 
 	whipAnswer, sessionId, err := webrtc.WHEP(string(offer), token)
