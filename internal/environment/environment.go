@@ -45,12 +45,15 @@ func LoadEnvironmentVariables() {
 func loadConfigs() error {
 	if os.Getenv(APP_ENV) == "development" {
 		log.Println("Environment: Loading `" + envFileDevelopment + "`")
-		return godotenv.Load(envFileDevelopment)
+		if err := godotenv.Load(envFileDevelopment); err != nil {
+			log.Printf("Environment: Could not load `%s`: %v", envFileDevelopment, err)
+		}
+		return nil
 	}
 
 	log.Println("Environment: Loading `" + envFileProduction + "`")
 	if err := godotenv.Load(envFileProduction); err != nil {
-		return err
+		log.Printf("Environment: Could not load `%s`: %v", envFileProduction, err)
 	}
 
 	if os.Getenv(FRONTEND_DISABLED) == "" {
