@@ -9,7 +9,15 @@ import (
 )
 
 // Create and start a new WHEP session
-func CreateNewWhep(whepSessionId string, audioTrack *codecs.TrackMultiCodec, audioLayer string, videoTrack *codecs.TrackMultiCodec, videoLayer string, peerConnection *webrtc.PeerConnection) (whepSession *WhepSession) {
+func CreateNewWhep(
+	whepSessionId string,
+	audioTrack *codecs.TrackMultiCodec,
+	audioLayer string,
+	videoTrack *codecs.TrackMultiCodec,
+	videoLayer string,
+	peerConnection *webrtc.PeerConnection,
+	pliSender func(),
+) (whepSession *WhepSession) {
 	log.Println("WhepSession.CreateNewWhep", whepSessionId)
 
 	activeContext, activeContextCancel := context.WithCancel(context.Background())
@@ -19,12 +27,11 @@ func CreateNewWhep(whepSessionId string, audioTrack *codecs.TrackMultiCodec, aud
 		VideoTrack:          videoTrack,
 		AudioTimestamp:      5000,
 		VideoTimestamp:      5000,
-		WhipEventsChannel:   make(chan any, 100),
 		SseEventsChannel:    make(chan any, 100),
-		ConnectionChannel:   make(chan any, 100),
 		PeerConnection:      peerConnection,
 		ActiveContext:       activeContext,
 		ActiveContextCancel: activeContextCancel,
+		pliSender:           pliSender,
 	}
 
 	log.Println("WhepSession.CreateNewWhep.AudioLayer", audioLayer)
@@ -103,6 +110,7 @@ func (whepSession *WhepSession) SetAudioLayer(encodingId string) {
 	log.Println("Setting Audio Layer")
 	whepSession.AudioLayerCurrent.Store(encodingId)
 	whepSession.IsWaitingForKeyframe.Store(true)
+	whepSession.SendPLI()
 }
 
 // Finds the corresponding Whip session to the Whep session id and sets the requested video layer
@@ -110,4 +118,15 @@ func (whepSession *WhepSession) SetVideoLayer(encodingId string) {
 	log.Println("Setting Video Layer")
 	whepSession.VideoLayerCurrent.Store(encodingId)
 	whepSession.IsWaitingForKeyframe.Store(true)
+	whepSession.SendPLI()
+}
+
+func (whepSession *WhepSession) SendPLI() {
+	if whepSession.IsSessionClosed.Load() {
+		return
+	}
+
+	if whepSession.pliSender != nil {
+		whepSession.pliSender()
+	}
 }

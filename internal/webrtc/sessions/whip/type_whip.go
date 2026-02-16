@@ -21,8 +21,6 @@ type (
 		OnTrackChangeChannel chan struct{}
 		EventsChannel        chan any
 
-		PacketLossIndicationChannel chan bool
-
 		// Protects AudioTrack, VideoTracks
 		TracksLock  sync.RWMutex
 		VideoTracks map[string]*VideoTrack
@@ -43,6 +41,7 @@ type (
 		PacketsDropped  atomic.Uint64
 		LastReceived    atomic.Value
 		LastKeyFrame    atomic.Value
+		MediaSSRC       atomic.Uint32
 		Track           *codecs.TrackMultiCodec
 	}
 	AudioTrack struct {

@@ -43,6 +43,7 @@ func (whepSession *WhepSession) SendVideoPacket(packet codecs.TrackPacket) {
 
 	if whepSession.IsWaitingForKeyframe.Load() {
 		if !packet.IsKeyframe {
+			whepSession.SendPLI()
 			return
 		}
 

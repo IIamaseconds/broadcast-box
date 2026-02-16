@@ -15,12 +15,11 @@ type (
 		IsWaitingForKeyframe atomic.Bool
 		IsSessionClosed      atomic.Bool
 
-		WhipEventsChannel   chan any
 		SseEventsChannel    chan any
-		ConnectionChannel   chan any
 		SessionClose        sync.Once
 		ActiveContext       context.Context
 		ActiveContextCancel func()
+		pliSender           func()
 
 		PeerConnectionLock sync.RWMutex
 		PeerConnection     *webrtc.PeerConnection

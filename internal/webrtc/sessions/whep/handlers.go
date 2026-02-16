@@ -18,10 +18,7 @@ func onWhepICEConnectionStateChangeHandler(whep *WhepSession) func(webrtc.ICECon
 		switch state {
 		case
 			webrtc.ICEConnectionStateConnected:
-			select {
-			case whep.ConnectionChannel <- true:
-			default:
-			}
+			whep.SendPLI()
 		case
 			webrtc.ICEConnectionStateFailed,
 			webrtc.ICEConnectionStateClosed:

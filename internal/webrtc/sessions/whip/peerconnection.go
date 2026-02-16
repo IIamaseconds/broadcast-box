@@ -3,6 +3,7 @@ package whip
 import (
 	"log"
 
+	"github.com/pion/rtcp"
 	"github.com/pion/webrtc/v4"
 )
 
@@ -41,4 +42,38 @@ func (whip *WhipSession) RemovePeerConnection() {
 	}
 
 	log.Println("WhipSession.RemovePeerConnection.Completed", whip.Id)
+}
+
+func (whip *WhipSession) SendPLI() {
+	whip.PeerConnectionLock.RLock()
+	peerConnection := whip.PeerConnection
+	whip.PeerConnectionLock.RUnlock()
+	if peerConnection == nil {
+		return
+	}
+
+	packets := whip.getPLIPackets()
+	if len(packets) == 0 {
+		return
+	}
+
+	if err := peerConnection.WriteRTCP(packets); err != nil {
+		log.Println("WhipSession.SendPLI.WriteRTCP.Error", err)
+	}
+}
+
+func (whip *WhipSession) getPLIPackets() []rtcp.Packet {
+	whip.TracksLock.RLock()
+	defer whip.TracksLock.RUnlock()
+
+	packets := make([]rtcp.Packet, 0, len(whip.VideoTracks))
+	for _, track := range whip.VideoTracks {
+		if mediaSSRC := track.MediaSSRC.Load(); mediaSSRC != 0 {
+			packets = append(packets, &rtcp.PictureLossIndication{
+				MediaSSRC: mediaSSRC,
+			})
+		}
+	}
+
+	return packets
 }

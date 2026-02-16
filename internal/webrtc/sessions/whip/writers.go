@@ -11,7 +11,6 @@ import (
 
 	"github.com/glimesh/broadcast-box/internal/webrtc/codecs"
 	"github.com/glimesh/broadcast-box/internal/webrtc/sessions/whep"
-	"github.com/pion/rtcp"
 	"github.com/pion/rtp"
 	"github.com/pion/sdp/v3"
 	"github.com/pion/webrtc/v4"
@@ -89,8 +88,7 @@ func (whip *WhipSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 		return
 	}
 	track.Priority = whip.getPrioritizedStreamingLayer(id, peerConnection.CurrentRemoteDescription().SDP)
-
-	go whipStreamVideoWriterChannels(remoteTrack, whip, peerConnection)
+	track.MediaSSRC.Store(uint32(remoteTrack.SSRC()))
 
 	var depacketizer rtp.Depacketizer
 	switch codec {
@@ -244,33 +242,6 @@ func isPacketKeyframe(pkt *rtp.Packet, codec codecs.TrackCodeType, depacketizer 
 	}
 
 	return true
-}
-
-// Triggers a request for a new key frame if it has been requested
-func whipStreamVideoWriterChannels(remoteTrack *webrtc.TrackRemote, whipSession *WhipSession, peerConnection *webrtc.PeerConnection) {
-	var lastCall = time.Now()
-
-	for {
-		{
-			select {
-			case <-whipSession.ActiveContext.Done():
-				return
-			case <-whipSession.PacketLossIndicationChannel:
-				if lastCall.Add(time.Second * 2).Before(time.Now()) {
-					log.Println("WhipSession.WhipStreamVideoWriterChannels.Trigger.PLI")
-					lastCall = time.Now()
-
-					if sendError := peerConnection.WriteRTCP([]rtcp.Packet{
-						&rtcp.PictureLossIndication{
-							MediaSSRC: uint32(remoteTrack.SSRC()),
-						},
-					}); sendError != nil {
-						return
-					}
-				}
-			}
-		}
-	}
 }
 
 // Helper function for getting the simulcast order and using as priority for consumers

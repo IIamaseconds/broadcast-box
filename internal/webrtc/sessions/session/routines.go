@@ -36,31 +36,7 @@ func (session *Session) handleWhepConnection(whipSession *whip.WhipSession, whep
 	session.removeWhep(whepSession.SessionId)
 }
 
-// TODO: Implement correctly
-// Handle WHEP Layer changes and trigger keyframe from WHIP
-// func (session *Session) handleWhepLayerChange(whipSession *whip.WhipSession, whepSession *whep.WhepSession) {
-// 	for {
-// 		select {
-// 		case <-whipSession.ActiveContext.Done():
-// 			return
-// 		default:
-// 			if whepSession.IsSessionClosed.Load() {
-// 				return
-// 			} else if session.HasHost.Load() && whepSession.IsWaitingForKeyframe.Load() {
-// 				log.Println("WhepSession.PictureLossIndication.IsWaitingForKeyframe")
-// 				select {
-// 				case whipSession.PacketLossIndicationChannel <- true:
-// 				default:
-// 					log.Println("WhepSession.PictureLossIndication.Channel: Full channel, skipping")
-// 				}
-// 			}
-// 		}
-//
-// 		time.Sleep(500 * time.Millisecond)
-// 	}
-// }
-
-func (session *Session) handleWhepVideoRtcpSender(rtcpSender *webrtc.RTPSender) {
+func (session *Session) handleWhepVideoRtcpSender(whepSession *whep.WhepSession, rtcpSender *webrtc.RTPSender) {
 	for {
 		rtcpPackets, _, rtcpErr := rtcpSender.ReadRTCP()
 		if rtcpErr != nil {
@@ -68,38 +44,9 @@ func (session *Session) handleWhepVideoRtcpSender(rtcpSender *webrtc.RTPSender) 
 			return
 		}
 
-		host := session.Host.Load()
-		if host == nil {
-			continue
-		}
-
 		for _, packet := range rtcpPackets {
 			if _, isPLI := packet.(*rtcp.PictureLossIndication); isPLI {
-				select {
-				case host.PacketLossIndicationChannel <- true:
-				default:
-				}
-			}
-		}
-	}
-}
-
-// Handle picture loss indication packages
-func (session *Session) handleWhepChannels(whepSession *whep.WhepSession) {
-	for {
-		select {
-		case <-whepSession.ActiveContext.Done():
-			return
-
-		case <-whepSession.ConnectionChannel:
-			host := session.Host.Load()
-			if host == nil {
-				continue
-			}
-
-			select {
-			case host.PacketLossIndicationChannel <- true:
-			default:
+				whepSession.SendPLI()
 			}
 		}
 	}

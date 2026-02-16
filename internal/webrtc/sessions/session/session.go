@@ -64,7 +64,8 @@ func (session *Session) AddWhep(whepSessionId string, peerConnection *webrtc.Pee
 		host.GetHighestPrioritizedAudioTrack(),
 		videoTrack,
 		host.GetHighestPrioritizedVideoTrack(),
-		peerConnection)
+		peerConnection,
+		host.SendPLI)
 
 	whepSession.RegisterWhepHandlers(peerConnection)
 
@@ -73,11 +74,7 @@ func (session *Session) AddWhep(whepSessionId string, peerConnection *webrtc.Pee
 	session.WhepSessionsLock.Unlock()
 
 	go session.handleWhepConnection(host, whepSession)
-	go session.handleWhepChannels(whepSession)
-	go session.handleWhepVideoRtcpSender(videoRtcpSender)
-
-	// TODO: Implement
-	// go session.handleWhepLayerChange(host, whepSession)
+	go session.handleWhepVideoRtcpSender(whepSession, videoRtcpSender)
 
 	return nil
 }
@@ -104,12 +101,11 @@ func (session *Session) AddHost(peerConnection *webrtc.PeerConnection) (err erro
 	activeContext, activeContextCancel := context.WithCancel(context.Background())
 
 	host := &whip.WhipSession{
-		Id:                          uuid.New().String(),
-		AudioTracks:                 make(map[string]*whip.AudioTrack),
-		VideoTracks:                 make(map[string]*whip.VideoTrack),
-		PacketLossIndicationChannel: make(chan bool, 50),
-		OnTrackChangeChannel:        make(chan struct{}, 50),
-		EventsChannel:               make(chan any, 50),
+		Id:                   uuid.New().String(),
+		AudioTracks:          make(map[string]*whip.AudioTrack),
+		VideoTracks:          make(map[string]*whip.VideoTrack),
+		OnTrackChangeChannel: make(chan struct{}, 50),
+		EventsChannel:        make(chan any, 50),
 
 		ActiveContext:       activeContext,
 		ActiveContextCancel: activeContextCancel,
