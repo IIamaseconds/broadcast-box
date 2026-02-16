@@ -38,12 +38,8 @@ const (
 	NAT1To1IP                = "NAT_1_TO_1_IP"
 	NATICECandidateType      = "NAT_ICE_CANDIDATE_TYPE"
 
-	// TURN/STUN
-	STUNServers          = "STUN_SERVERS"
-	TURNServers          = "TURN_SERVERS"
-	TURNServersInternal  = "TURN_SERVERS_INTERNAL"
-	STUNServersInternal  = "STUN_SERVERS_INTERNAL"
-	TURNServerAuthSecret = "TURN_SERVER_AUTH_SECRET"
+	// STUN
+	STUNServers = "STUN_SERVERS"
 
 	// PEERCONNECTION
 	AppendCandidate = "APPEND_CANDIDATE"

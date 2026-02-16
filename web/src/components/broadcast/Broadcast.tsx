@@ -40,26 +40,8 @@ function BrowserBroadcaster() {
 
 	const endStream = () => navigate('/')
 
-	interface ICEComponentServer {
-		urls: string;
-		username?: string;
-		credential?: string
-	}
-
 	useEffect(() => {
-		// Fetch ICE-Servers
-		fetch(`/api/ice-servers`, {
-			method: 'GET',
-		}).then(r => r.json())
-			.then((result: ICEComponentServer[]) => {
-				peerConnectionRef.current = new RTCPeerConnection({
-					iceServers: result.map(r => ({
-						urls: r.urls,
-						username: r.username,
-						credential: r.credential,
-					}))
-				});
-			})
+		peerConnectionRef.current = new RTCPeerConnection();
 
 		return () => peerConnectionRef.current?.close()
 	}, [])

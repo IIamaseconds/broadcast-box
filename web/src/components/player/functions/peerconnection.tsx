@@ -166,17 +166,7 @@ export async function PeerConnectionSetup(props: SetupPeerConnectionProps): Prom
 }
 
 async function createPeerConnection(): Promise<RTCPeerConnection> {
-	return await fetch(`/api/ice-servers`, {
-		method: 'GET',
-	}).then(r => r.json())
-		.then((result) => {
-			return new RTCPeerConnection({
-				iceServers: result
-			});
-		}).catch(() => {
-			console.error("Error calling Ice-Servers endpoint. Ignoring STUN/TURN configuration")
-			return new RTCPeerConnection();
-		})
+	return new RTCPeerConnection();
 }
 
 export function waitForIceGatheringComplete(peerConnection: RTCPeerConnection) {
