@@ -6,23 +6,23 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
-func (whep *WHEPSession) RegisterWHEPHandlers(peerConnection *webrtc.PeerConnection) {
+func (w *WHEPSession) RegisterWHEPHandlers(peerConnection *webrtc.PeerConnection) {
 	log.Println("WHEPSession.RegisterHandlers")
 
-	peerConnection.OnICEConnectionStateChange(onWHEPICEConnectionStateChangeHandler(whep))
+	peerConnection.OnICEConnectionStateChange(onWHEPICEConnectionStateChangeHandler(w))
 }
 
-func onWHEPICEConnectionStateChangeHandler(whep *WHEPSession) func(webrtc.ICEConnectionState) {
+func onWHEPICEConnectionStateChangeHandler(w *WHEPSession) func(webrtc.ICEConnectionState) {
 	return func(state webrtc.ICEConnectionState) {
 		log.Println("WHEPSession.OnICEConnectionStateChange:", state)
 		switch state {
 		case
 			webrtc.ICEConnectionStateConnected:
-			whep.SendPLI()
+			w.SendPLI()
 		case
 			webrtc.ICEConnectionStateFailed,
 			webrtc.ICEConnectionStateClosed:
-			whep.Close()
+			w.Close()
 		default:
 			log.Println("WHEPSession.OnICEConnectionStateChange.Default", state)
 		}

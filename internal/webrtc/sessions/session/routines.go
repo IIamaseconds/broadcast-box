@@ -24,16 +24,16 @@ import (
 // }
 
 // Waits for WHEP disconnect and removes the session
-func (session *Session) handleWHEPConnection(whepSession *whep.WHEPSession) {
-	log.Println("Session.WHEPSession.Connected:", session.StreamKey)
+func (s *Session) handleWHEPConnection(whepSession *whep.WHEPSession) {
+	log.Println("Session.WHEPSession.Connected:", s.StreamKey)
 
 	<-whepSession.ActiveContext.Done()
 
-	log.Println("Session.WHEPSession.Disconnected:", session.StreamKey, " - ", whepSession.SessionID)
-	session.removeWHEP(whepSession.SessionID)
+	log.Println("Session.WHEPSession.Disconnected:", s.StreamKey, " - ", whepSession.SessionID)
+	s.removeWHEP(whepSession.SessionID)
 }
 
-func (session *Session) handleWHEPVideoRTCPSender(whepSession *whep.WHEPSession, rtcpSender *webrtc.RTPSender) {
+func (s *Session) handleWHEPVideoRTCPSender(whepSession *whep.WHEPSession, rtcpSender *webrtc.RTPSender) {
 	for {
 		rtcpPackets, _, rtcpErr := rtcpSender.ReadRTCP()
 		if rtcpErr != nil {
@@ -50,16 +50,16 @@ func (session *Session) handleWHEPVideoRTCPSender(whepSession *whep.WHEPSession,
 }
 
 // Broadcast stream status to connected WHEP clients while host is active.
-func (session *Session) hostStatusLoop() {
+func (s *Session) hostStatusLoop() {
 	log.Println("Session.Host.HostStatusLoop")
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
 	for {
-		host := session.Host.Load()
+		host := s.Host.Load()
 		if host == nil {
-			if session.isEmpty() {
-				session.close()
+			if s.isEmpty() {
+				s.close()
 				return
 			}
 
@@ -70,26 +70,26 @@ func (session *Session) hostStatusLoop() {
 		select {
 
 		case <-host.ActiveContext.Done():
-			session.RemoveHost()
+			s.RemoveHost()
 
-			if session.isEmpty() {
-				session.close()
+			if s.isEmpty() {
+				s.close()
 			}
 			return
 
 		// Send status every 5 seconds
 		case <-ticker.C:
-			if session.isEmpty() {
-				session.close()
-			} else if session.Host.Load() != nil {
-				status := session.GetSessionStatsEvent()
+			if s.isEmpty() {
+				s.close()
+			} else if s.Host.Load() != nil {
+				status := s.GetSessionStatsEvent()
 
-				session.WHEPSessionsLock.RLock()
-				whepSessions := make([]*whep.WHEPSession, 0, len(session.WHEPSessions))
-				for _, whepSession := range session.WHEPSessions {
+				s.WHEPSessionsLock.RLock()
+				whepSessions := make([]*whep.WHEPSession, 0, len(s.WHEPSessions))
+				for _, whepSession := range s.WHEPSessions {
 					whepSessions = append(whepSessions, whepSession)
 				}
-				session.WHEPSessionsLock.RUnlock()
+				s.WHEPSessionsLock.RUnlock()
 
 				for _, whepSession := range whepSessions {
 					whepSession.BroadcastSSE(status)

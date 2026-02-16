@@ -13,21 +13,21 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
-func (session *Session) UpdateStreamStatus(profile authorization.PublicProfile) {
-	session.StatusLock.Lock()
+func (s *Session) UpdateStreamStatus(profile authorization.PublicProfile) {
+	s.StatusLock.Lock()
 
-	session.HasHost.Store(true)
-	session.MOTD = profile.MOTD
-	session.IsPublic = profile.IsPublic
+	s.HasHost.Store(true)
+	s.MOTD = profile.MOTD
+	s.IsPublic = profile.IsPublic
 
-	session.StatusLock.Unlock()
+	s.StatusLock.Unlock()
 }
 
 // Add WHEP session to existing WHIP session
-func (session *Session) AddWHEP(whepSessionID string, peerConnection *webrtc.PeerConnection, audioTrack *codecs.TrackMultiCodec, videoTrack *codecs.TrackMultiCodec, videoRTCPSender *webrtc.RTPSender) (err error) {
+func (s *Session) AddWHEP(whepSessionID string, peerConnection *webrtc.PeerConnection, audioTrack *codecs.TrackMultiCodec, videoTrack *codecs.TrackMultiCodec, videoRTCPSender *webrtc.RTPSender) (err error) {
 	log.Println("WHIPSessionManager.WHIPSession.AddWHEPSession")
 
-	host := session.Host.Load()
+	host := s.Host.Load()
 	if host == nil {
 		return fmt.Errorf("no host was found on the current session")
 	}
@@ -43,32 +43,32 @@ func (session *Session) AddWHEP(whepSessionID string, peerConnection *webrtc.Pee
 
 	whepSession.RegisterWHEPHandlers(peerConnection)
 
-	session.WHEPSessionsLock.Lock()
-	session.WHEPSessions[whepSessionID] = whepSession
-	session.WHEPSessionsLock.Unlock()
-	session.updateHostWHEPSessionsSnapshot()
+	s.WHEPSessionsLock.Lock()
+	s.WHEPSessions[whepSessionID] = whepSession
+	s.WHEPSessionsLock.Unlock()
+	s.updateHostWHEPSessionsSnapshot()
 
-	go session.handleWHEPConnection(whepSession)
-	go session.handleWHEPVideoRTCPSender(whepSession, videoRTCPSender)
+	go s.handleWHEPConnection(whepSession)
+	go s.handleWHEPVideoRTCPSender(whepSession, videoRTCPSender)
 
 	return nil
 }
 
 // Add host
-func (session *Session) AddHost(peerConnection *webrtc.PeerConnection) (err error) {
+func (s *Session) AddHost(peerConnection *webrtc.PeerConnection) (err error) {
 	log.Println("Session.AddHost")
 
 	for {
-		host := session.Host.Load()
+		host := s.Host.Load()
 		if host == nil {
 			break
 		}
 
-		if host.PeerConnection.ConnectionState() != webrtc.PeerConnectionStateClosed || session.ActiveContext.Err() == nil {
+		if host.PeerConnection.ConnectionState() != webrtc.PeerConnectionStateClosed || s.ActiveContext.Err() == nil {
 			return fmt.Errorf("session already has a host")
 		}
 
-		if session.Host.CompareAndSwap(host, nil) {
+		if s.Host.CompareAndSwap(host, nil) {
 			break
 		}
 	}
@@ -84,30 +84,30 @@ func (session *Session) AddHost(peerConnection *webrtc.PeerConnection) (err erro
 		ActiveContextCancel: activeContextCancel,
 	}
 
-	host.AddPeerConnection(peerConnection, session.StreamKey)
-	if !session.Host.CompareAndSwap(nil, host) {
+	host.AddPeerConnection(peerConnection, s.StreamKey)
+	if !s.Host.CompareAndSwap(nil, host) {
 		host.ActiveContextCancel()
 		host.RemovePeerConnection()
 		host.RemoveTracks()
 		return fmt.Errorf("session already has a host")
 	}
 	host.WHEPSessionsSnapshot.Store(make(map[string]*whep.WHEPSession))
-	session.updateHostWHEPSessionsSnapshot()
+	s.updateHostWHEPSessionsSnapshot()
 
-	go session.hostStatusLoop()
+	go s.hostStatusLoop()
 
 	return nil
 }
 
-func (session *Session) RemoveHost() {
+func (s *Session) RemoveHost() {
 
-	host := session.Host.Swap(nil)
+	host := s.Host.Swap(nil)
 	if host == nil {
-		log.Println("Session.RemoveHost", session.StreamKey, "- No host to remove")
+		log.Println("Session.RemoveHost", s.StreamKey, "- No host to remove")
 		return
 	}
 
-	log.Println("Session.RemoveHost", session.StreamKey)
+	log.Println("Session.RemoveHost", s.StreamKey)
 
 	host.WHEPSessionsSnapshot.Store(make(map[string]*whep.WHEPSession))
 	host.ActiveContextCancel()
@@ -118,69 +118,69 @@ func (session *Session) RemoveHost() {
 // Remove WHEP session from WHIP session
 // In case the WHIP session does not have a host, and no more whep sessions, it will
 // be remove from the manager.
-func (session *Session) removeWHEP(whepSessionID string) {
-	log.Println("Session.RemoveWHEPSession:", session.StreamKey, " - ", whepSessionID)
+func (s *Session) removeWHEP(whepSessionID string) {
+	log.Println("Session.RemoveWHEPSession:", s.StreamKey, " - ", whepSessionID)
 
-	session.WHEPSessionsLock.Lock()
-	if whepSession, ok := session.WHEPSessions[whepSessionID]; ok {
+	s.WHEPSessionsLock.Lock()
+	if whepSession, ok := s.WHEPSessions[whepSessionID]; ok {
 		whepSession.Close()
-		delete(session.WHEPSessions, whepSessionID)
+		delete(s.WHEPSessions, whepSessionID)
 	} else {
-		log.Println("Session.RemoveWHEPSession.InvalidSession:", session.StreamKey, " - ", whepSessionID)
+		log.Println("Session.RemoveWHEPSession.InvalidSession:", s.StreamKey, " - ", whepSessionID)
 	}
-	session.WHEPSessionsLock.Unlock()
-	session.updateHostWHEPSessionsSnapshot()
+	s.WHEPSessionsLock.Unlock()
+	s.updateHostWHEPSessionsSnapshot()
 
-	if session.isEmpty() {
-		session.close()
+	if s.isEmpty() {
+		s.close()
 	}
 }
 
 // Remove all Hosts and clients before closing down session
-func (session *Session) close() {
-	session.WHEPSessionsLock.Lock()
-	whepSessions := make([]*whep.WHEPSession, 0, len(session.WHEPSessions))
-	for _, whepSession := range session.WHEPSessions {
+func (s *Session) close() {
+	s.WHEPSessionsLock.Lock()
+	whepSessions := make([]*whep.WHEPSession, 0, len(s.WHEPSessions))
+	for _, whepSession := range s.WHEPSessions {
 		whepSessions = append(whepSessions, whepSession)
 	}
-	session.WHEPSessions = make(map[string]*whep.WHEPSession)
-	session.WHEPSessionsLock.Unlock()
+	s.WHEPSessions = make(map[string]*whep.WHEPSession)
+	s.WHEPSessionsLock.Unlock()
 
 	for _, whepSession := range whepSessions {
 		whepSession.Close()
 	}
-	session.updateHostWHEPSessionsSnapshot()
+	s.updateHostWHEPSessionsSnapshot()
 
-	session.RemoveHost()
+	s.RemoveHost()
 
-	session.ActiveContextCancel()
+	s.ActiveContextCancel()
 }
 
-func (session *Session) Close() {
-	log.Println("Session.Close", session.StreamKey)
-	session.close()
+func (s *Session) Close() {
+	log.Println("Session.Close", s.StreamKey)
+	s.close()
 }
 
 // Returns true is no WHIP tracks are present, and no WHEP sessions are waiting for incoming streams
-func (session *Session) isEmpty() bool {
-	if session.hasWHEPSessions() {
-		log.Println("Session.IsEmpty.HasWHEPSessions (false):", session.StreamKey)
+func (s *Session) isEmpty() bool {
+	if s.hasWHEPSessions() {
+		log.Println("Session.IsEmpty.HasWHEPSessions (false):", s.StreamKey)
 		return false
 	}
 
-	if session.isStreaming() {
-		log.Println("Session.IsEmpty.IsActive (false):", session.StreamKey)
+	if s.isStreaming() {
+		log.Println("Session.IsEmpty.IsActive (false):", s.StreamKey)
 		return false
 	}
 
-	log.Println("Session.IsEmpty (true):", session.StreamKey)
+	log.Println("Session.IsEmpty (true):", s.StreamKey)
 	return true
 }
 
 // Returns true if any tracks are available for the session
-func (session *Session) isStreaming() bool {
+func (s *Session) isStreaming() bool {
 
-	host := session.Host.Load()
+	host := s.Host.Load()
 	if host == nil {
 		return false
 	}
@@ -202,54 +202,54 @@ func (session *Session) isStreaming() bool {
 	return false
 }
 
-func (session *Session) hasWHEPSessions() bool {
-	session.WHEPSessionsLock.RLock()
-	log.Println("Session.HasWHEPSessions:", len(session.WHEPSessions))
+func (s *Session) hasWHEPSessions() bool {
+	s.WHEPSessionsLock.RLock()
+	log.Println("Session.HasWHEPSessions:", len(s.WHEPSessions))
 
-	if len(session.WHEPSessions) == 0 {
-		session.WHEPSessionsLock.RUnlock()
+	if len(s.WHEPSessions) == 0 {
+		s.WHEPSessionsLock.RUnlock()
 		return false
 	}
 
-	session.WHEPSessionsLock.RUnlock()
+	s.WHEPSessionsLock.RUnlock()
 	return true
 }
 
-func (session *Session) updateHostWHEPSessionsSnapshot() {
-	host := session.Host.Load()
+func (s *Session) updateHostWHEPSessionsSnapshot() {
+	host := s.Host.Load()
 	if host == nil {
 		return
 	}
 
-	session.WHEPSessionsLock.RLock()
-	snapshot := make(map[string]*whep.WHEPSession, len(session.WHEPSessions))
-	for _, whepSession := range session.WHEPSessions {
+	s.WHEPSessionsLock.RLock()
+	snapshot := make(map[string]*whep.WHEPSession, len(s.WHEPSessions))
+	for _, whepSession := range s.WHEPSessions {
 		if !whepSession.IsSessionClosed.Load() {
 			snapshot[whepSession.SessionID] = whepSession
 		}
 	}
-	session.WHEPSessionsLock.RUnlock()
+	s.WHEPSessionsLock.RUnlock()
 
 	host.WHEPSessionsSnapshot.Store(snapshot)
 }
 
 // Get the status of the current session
-func (session *Session) GetStreamStatus() (status WHIPSessionStatus) {
-	session.WHEPSessionsLock.RLock()
-	whepSessionsCount := len(session.WHEPSessions)
-	session.WHEPSessionsLock.RUnlock()
+func (s *Session) GetStreamStatus() (status WHIPSessionStatus) {
+	s.WHEPSessionsLock.RLock()
+	whepSessionsCount := len(s.WHEPSessions)
+	s.WHEPSessionsLock.RUnlock()
 
-	session.StatusLock.RLock()
+	s.StatusLock.RLock()
 
 	status = WHIPSessionStatus{
-		StreamKey:   session.StreamKey,
-		MOTD:        session.MOTD,
+		StreamKey:   s.StreamKey,
+		MOTD:        s.MOTD,
 		ViewerCount: whepSessionsCount,
-		IsOnline:    session.HasHost.Load(),
-		StreamStart: session.StreamStart,
+		IsOnline:    s.HasHost.Load(),
+		StreamStart: s.StreamStart,
 	}
 
-	session.StatusLock.RUnlock()
+	s.StatusLock.RUnlock()
 
 	return
 }

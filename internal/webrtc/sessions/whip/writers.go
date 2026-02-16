@@ -17,7 +17,7 @@ import (
 	pionCodecs "github.com/pion/rtp/codecs"
 )
 
-func (whip *WHIPSession) AudioWriter(remoteTrack *webrtc.TrackRemote, streamKey string, peerConnection *webrtc.PeerConnection) {
+func (w *WHIPSession) AudioWriter(remoteTrack *webrtc.TrackRemote, streamKey string, peerConnection *webrtc.PeerConnection) {
 	id := remoteTrack.RID()
 
 	if id == "" {
@@ -25,13 +25,13 @@ func (whip *WHIPSession) AudioWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 	}
 
 	codec := codecs.GetAudioTrackCodec(remoteTrack.Codec().MimeType)
-	track, err := whip.AddAudioTrack(id, streamKey, codec)
+	track, err := w.AddAudioTrack(id, streamKey, codec)
 	if err != nil {
 		log.Println("AudioWriter.AddTrack.Error:", err)
 		return
 	}
 
-	track.Priority = whip.getPrioritizedStreamingLayer(id, peerConnection.CurrentRemoteDescription().SDP)
+	track.Priority = w.getPrioritizedStreamingLayer(id, peerConnection.CurrentRemoteDescription().SDP)
 
 	rtpPkt := &rtp.Packet{}
 	rtpBuf := make([]byte, 1500)
@@ -55,7 +55,7 @@ func (whip *WHIPSession) AudioWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 		}
 
 		var sessions map[string]*whep.WHEPSession
-		if sessionsAny := whip.WHEPSessionsSnapshot.Load(); sessionsAny != nil {
+		if sessionsAny := w.WHEPSessionsSnapshot.Load(); sessionsAny != nil {
 			sessions = sessionsAny.(map[string]*whep.WHEPSession)
 		}
 
@@ -73,7 +73,7 @@ func (whip *WHIPSession) AudioWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 	}
 }
 
-func (whip *WHIPSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey string, peerConnection *webrtc.PeerConnection) {
+func (w *WHIPSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey string, peerConnection *webrtc.PeerConnection) {
 	id := remoteTrack.RID()
 
 	if id == "" {
@@ -81,12 +81,12 @@ func (whip *WHIPSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 	}
 
 	codec := codecs.GetVideoTrackCodec(remoteTrack.Codec().MimeType)
-	track, err := whip.AddVideoTrack(id, streamKey, codec)
+	track, err := w.AddVideoTrack(id, streamKey, codec)
 	if err != nil {
 		log.Println("WHIPSession.VideoWriter.AddTrack.Error:", err)
 		return
 	}
-	track.Priority = whip.getPrioritizedStreamingLayer(id, peerConnection.CurrentRemoteDescription().SDP)
+	track.Priority = w.getPrioritizedStreamingLayer(id, peerConnection.CurrentRemoteDescription().SDP)
 	track.MediaSSRC.Store(uint32(remoteTrack.SSRC()))
 
 	var depacketizer rtp.Depacketizer
@@ -121,7 +121,7 @@ func (whip *WHIPSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 	for {
 
 		select {
-		case <-whip.ActiveContext.Done():
+		case <-w.ActiveContext.Done():
 			return
 		default:
 		}
@@ -130,7 +130,7 @@ func (whip *WHIPSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				log.Println("WHIPSession.VideoWriter.RtpPkt.EndOfStream")
-				whip.ActiveContextCancel()
+				w.ActiveContextCancel()
 				return
 			} else {
 				log.Println("WHIPSession.VideoWriter.RtpPkt.Err", err)
@@ -184,7 +184,7 @@ func (whip *WHIPSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 		lastSequenceNumber = rtpPkt.SequenceNumber
 
 		var sessions map[string]*whep.WHEPSession
-		if sessionsAny := whip.WHEPSessionsSnapshot.Load(); sessionsAny != nil {
+		if sessionsAny := w.WHEPSessionsSnapshot.Load(); sessionsAny != nil {
 			sessions = sessionsAny.(map[string]*whep.WHEPSession)
 		}
 
@@ -235,7 +235,7 @@ func isPacketKeyframe(pkt *rtp.Packet, codec codecs.TrackCodeType, depacketizer 
 // Helper function for getting the simulcast order and using as priority for consumers
 // This example will order from left to right with highest to lowest priority
 // a=simulcast:send High,Mid,Low
-func (whip *WHIPSession) getPrioritizedStreamingLayer(layer string, sdpDescription string) int {
+func (w *WHIPSession) getPrioritizedStreamingLayer(layer string, sdpDescription string) int {
 	var sessionDescription sdp.SessionDescription
 	err := sessionDescription.Unmarshal([]byte(sdpDescription))
 	if err != nil {

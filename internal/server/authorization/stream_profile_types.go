@@ -14,36 +14,36 @@ type Profile struct {
 
 var separator = "_"
 
-func (profile *Profile) StreamKey() string {
-	splitIndex := strings.LastIndex(profile.FileName, separator)
-	return profile.FileName[:splitIndex+len(separator)-1]
+func (p *Profile) StreamKey() string {
+	splitIndex := strings.LastIndex(p.FileName, separator)
+	return p.FileName[:splitIndex+len(separator)-1]
 }
-func (profile *Profile) StreamToken() string {
-	splitIndex := strings.LastIndex(profile.FileName, separator)
-	return profile.FileName[splitIndex+len(separator):]
+func (p *Profile) StreamToken() string {
+	splitIndex := strings.LastIndex(p.FileName, separator)
+	return p.FileName[splitIndex+len(separator):]
 }
-func (profile *Profile) AsPublicProfile() *PublicProfile {
+func (p *Profile) AsPublicProfile() *PublicProfile {
 	return &PublicProfile{
-		StreamKey: profile.StreamKey(),
-		IsActive:  profile.IsActive,
-		IsPublic:  profile.IsPublic,
-		MOTD:      profile.MOTD,
+		StreamKey: p.StreamKey(),
+		IsActive:  p.IsActive,
+		IsPublic:  p.IsPublic,
+		MOTD:      p.MOTD,
 	}
 }
-func (profile *Profile) AsPersonalProfile() *PersonalProfile {
+func (p *Profile) AsPersonalProfile() *PersonalProfile {
 	return &PersonalProfile{
-		StreamKey: profile.StreamKey(),
-		IsActive:  profile.IsActive,
-		IsPublic:  profile.IsPublic,
-		MOTD:      profile.MOTD,
+		StreamKey: p.StreamKey(),
+		IsActive:  p.IsActive,
+		IsPublic:  p.IsPublic,
+		MOTD:      p.MOTD,
 	}
 }
-func (profile *Profile) AsAdminProfile() *AdminProfile {
+func (p *Profile) AsAdminProfile() *AdminProfile {
 	return &AdminProfile{
-		StreamKey: profile.StreamKey(),
-		Token:     profile.StreamToken(),
-		IsPublic:  profile.IsPublic,
-		MOTD:      profile.MOTD,
+		StreamKey: p.StreamKey(),
+		Token:     p.StreamToken(),
+		IsPublic:  p.IsPublic,
+		MOTD:      p.MOTD,
 	}
 }
 

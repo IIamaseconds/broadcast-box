@@ -10,12 +10,12 @@ import (
 )
 
 // Add a new AudioTrack to the WHIP session
-func (whip *WHIPSession) AddAudioTrack(rid string, streamKey string, codec codecs.TrackCodeType) (*AudioTrack, error) {
+func (w *WHIPSession) AddAudioTrack(rid string, streamKey string, codec codecs.TrackCodeType) (*AudioTrack, error) {
 	log.Println("WHIPSession.AddAudioTrack:", streamKey, "(", rid, ")")
-	whip.TracksLock.Lock()
-	defer whip.TracksLock.Unlock()
+	w.TracksLock.Lock()
+	defer w.TracksLock.Unlock()
 
-	if existingTrack, ok := whip.AudioTracks[rid]; ok {
+	if existingTrack, ok := w.AudioTracks[rid]; ok {
 		return existingTrack, nil
 	}
 
@@ -30,18 +30,18 @@ func (whip *WHIPSession) AddAudioTrack(rid string, streamKey string, codec codec
 	}
 	track.LastReceived.Store(time.Time{})
 
-	whip.AudioTracks[track.Rid] = track
+	w.AudioTracks[track.Rid] = track
 
 	return track, nil
 }
 
 // Add a new VideoTrack to the WHIP session
-func (whip *WHIPSession) AddVideoTrack(rid string, streamKey string, codec codecs.TrackCodeType) (*VideoTrack, error) {
+func (w *WHIPSession) AddVideoTrack(rid string, streamKey string, codec codecs.TrackCodeType) (*VideoTrack, error) {
 	log.Println("WHIPSession.AddVideoTrack:", "(", rid, ")")
-	whip.TracksLock.Lock()
-	defer whip.TracksLock.Unlock()
+	w.TracksLock.Lock()
+	defer w.TracksLock.Unlock()
 
-	if existingTrack, ok := whip.VideoTracks[rid]; ok {
+	if existingTrack, ok := w.VideoTracks[rid]; ok {
 		return existingTrack, nil
 	}
 
@@ -56,34 +56,34 @@ func (whip *WHIPSession) AddVideoTrack(rid string, streamKey string, codec codec
 	}
 	track.LastReceived.Store(time.Time{})
 
-	whip.VideoTracks[rid] = track
+	w.VideoTracks[rid] = track
 
 	return track, nil
 }
 
 // Remove Audio and Video tracks coming from the whip session id
-func (whip *WHIPSession) RemoveTracks() {
+func (w *WHIPSession) RemoveTracks() {
 	log.Println("WHIPSession.RemoveTracks")
 
-	whip.TracksLock.Lock()
-	whip.AudioTracks = make(map[string]*AudioTrack)
-	whip.VideoTracks = make(map[string]*VideoTrack)
-	whip.TracksLock.Unlock()
+	w.TracksLock.Lock()
+	w.AudioTracks = make(map[string]*AudioTrack)
+	w.VideoTracks = make(map[string]*VideoTrack)
+	w.TracksLock.Unlock()
 }
 
 // Get highest prioritized audio track in the whip session
 // This only works if the priority has been set.
 // Currently this is only supported when being set through the simulcast
 // property in the offer made by the whip connection
-func (whip *WHIPSession) GetHighestPrioritizedAudioTrack() string {
-	if len(whip.AudioTracks) == 0 {
-		log.Println("No Audio tracks was found for", whip.ID)
+func (w *WHIPSession) GetHighestPrioritizedAudioTrack() string {
+	if len(w.AudioTracks) == 0 {
+		log.Println("No Audio tracks was found for", w.ID)
 		return ""
 	}
 
-	whip.TracksLock.RLock()
+	w.TracksLock.RLock()
 	var highestPriorityAudioTrack *AudioTrack
-	for _, trackPriority := range whip.AudioTracks {
+	for _, trackPriority := range w.AudioTracks {
 		if highestPriorityAudioTrack == nil {
 			highestPriorityAudioTrack = trackPriority
 			continue
@@ -93,7 +93,7 @@ func (whip *WHIPSession) GetHighestPrioritizedAudioTrack() string {
 			highestPriorityAudioTrack = trackPriority
 		}
 	}
-	whip.TracksLock.RUnlock()
+	w.TracksLock.RUnlock()
 
 	if highestPriorityAudioTrack == nil {
 		return ""
@@ -107,15 +107,15 @@ func (whip *WHIPSession) GetHighestPrioritizedAudioTrack() string {
 // This only works if the priority has been set.
 // Currently this is only supported when being set through the simulcast
 // property in the offer made by the whip connection
-func (whip *WHIPSession) GetHighestPrioritizedVideoTrack() string {
-	if len(whip.VideoTracks) == 0 {
-		log.Println("No Video tracks was found for", whip.ID)
+func (w *WHIPSession) GetHighestPrioritizedVideoTrack() string {
+	if len(w.VideoTracks) == 0 {
+		log.Println("No Video tracks was found for", w.ID)
 	}
 
 	var highestPriorityVideoTrack *VideoTrack
 
-	whip.TracksLock.RLock()
-	for _, trackPriority := range whip.VideoTracks {
+	w.TracksLock.RLock()
+	for _, trackPriority := range w.VideoTracks {
 		if highestPriorityVideoTrack == nil {
 			highestPriorityVideoTrack = trackPriority
 			continue
@@ -125,7 +125,7 @@ func (whip *WHIPSession) GetHighestPrioritizedVideoTrack() string {
 			highestPriorityVideoTrack = trackPriority
 		}
 	}
-	whip.TracksLock.RUnlock()
+	w.TracksLock.RUnlock()
 
 	if highestPriorityVideoTrack == nil {
 		return ""

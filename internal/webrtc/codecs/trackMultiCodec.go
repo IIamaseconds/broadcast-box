@@ -37,10 +37,10 @@ type TrackMultiCodec struct {
 	currentPayloadType uint8
 }
 
-func (track *TrackMultiCodec) ID() string                { return track.id }
-func (track *TrackMultiCodec) RID() string               { return track.rid }
-func (track *TrackMultiCodec) StreamID() string          { return track.streamID }
-func (track *TrackMultiCodec) Kind() webrtc.RTPCodecType { return track.kind }
+func (t *TrackMultiCodec) ID() string                { return t.id }
+func (t *TrackMultiCodec) RID() string               { return t.rid }
+func (t *TrackMultiCodec) StreamID() string          { return t.streamID }
+func (t *TrackMultiCodec) Kind() webrtc.RTPCodecType { return t.kind }
 
 func CreateTrackMultiCodec(id string, rid string, streamID string, kind webrtc.RTPCodecType, codec TrackCodeType) *TrackMultiCodec {
 	return &TrackMultiCodec{
@@ -52,23 +52,23 @@ func CreateTrackMultiCodec(id string, rid string, streamID string, kind webrtc.R
 	}
 }
 
-func (track *TrackMultiCodec) Bind(ctx webrtc.TrackLocalContext) (webrtc.RTPCodecParameters, error) {
-	track.ssrc = ctx.SSRC()
-	track.writeStream = ctx.WriteStream()
+func (t *TrackMultiCodec) Bind(ctx webrtc.TrackLocalContext) (webrtc.RTPCodecParameters, error) {
+	t.ssrc = ctx.SSRC()
+	t.writeStream = ctx.WriteStream()
 
 	var videoCodecParameters webrtc.RTPCodecParameters
 	codecParameters := ctx.CodecParameters()
 	for parameters := range codecParameters {
 		switch GetAudioTrackCodec(codecParameters[parameters].MimeType) {
 		case AudioTrackCodecOpus:
-			track.payloadTypeOpus = uint8(codecParameters[parameters].PayloadType)
-			track.currentPayloadType = track.payloadTypeOpus
+			t.payloadTypeOpus = uint8(codecParameters[parameters].PayloadType)
+			t.currentPayloadType = t.payloadTypeOpus
 		}
 
-		if track.payloadTypeOpus != 0 {
-			log.Println("WHIPSession.TrackMultiCodec: Binding AudioTrack Type for", track.streamID, "-", track.currentPayloadType)
+		if t.payloadTypeOpus != 0 {
+			log.Println("WHIPSession.TrackMultiCodec: Binding AudioTrack Type for", t.streamID, "-", t.currentPayloadType)
 
-			track.kind = webrtc.RTPCodecTypeAudio
+			t.kind = webrtc.RTPCodecTypeAudio
 			return webrtc.RTPCodecParameters{
 				PayloadType: codecParameters[parameters].PayloadType,
 				RTPCodecCapability: webrtc.RTPCodecCapability{
@@ -82,34 +82,34 @@ func (track *TrackMultiCodec) Bind(ctx webrtc.TrackLocalContext) (webrtc.RTPCode
 
 		switch GetVideoTrackCodec(codecParameters[parameters].MimeType) {
 		case VideoTrackCodecH264:
-			track.payloadTypeH264 = uint8(codecParameters[parameters].PayloadType)
-			track.currentPayloadType = track.payloadTypeH264
+			t.payloadTypeH264 = uint8(codecParameters[parameters].PayloadType)
+			t.currentPayloadType = t.payloadTypeH264
 			videoCodecParameters = codecParameters[parameters]
 
 		case VideoTrackCodecH265:
-			track.payloadTypeH265 = uint8(codecParameters[parameters].PayloadType)
-			track.currentPayloadType = track.payloadTypeH265
+			t.payloadTypeH265 = uint8(codecParameters[parameters].PayloadType)
+			t.currentPayloadType = t.payloadTypeH265
 			videoCodecParameters = codecParameters[parameters]
 
 		case VideoTrackCodecVP8:
-			track.payloadTypeVP8 = uint8(codecParameters[parameters].PayloadType)
-			track.currentPayloadType = track.payloadTypeVP8
+			t.payloadTypeVP8 = uint8(codecParameters[parameters].PayloadType)
+			t.currentPayloadType = t.payloadTypeVP8
 			videoCodecParameters = codecParameters[parameters]
 
 		case VideoTrackCodecVP9:
-			track.payloadTypeVP9 = uint8(codecParameters[parameters].PayloadType)
-			track.currentPayloadType = track.payloadTypeVP9
+			t.payloadTypeVP9 = uint8(codecParameters[parameters].PayloadType)
+			t.currentPayloadType = t.payloadTypeVP9
 			videoCodecParameters = codecParameters[parameters]
 
 		case VideoTrackCodecAV1:
-			track.payloadTypeAV1 = uint8(codecParameters[parameters].PayloadType)
-			track.currentPayloadType = track.payloadTypeAV1
+			t.payloadTypeAV1 = uint8(codecParameters[parameters].PayloadType)
+			t.currentPayloadType = t.payloadTypeAV1
 			videoCodecParameters = codecParameters[parameters]
 		}
 	}
 
-	log.Println("WHEPSession.TrackMultiCodec: Binding VideoTrack Type for", track.streamID, "-", track.currentPayloadType)
-	track.kind = webrtc.RTPCodecTypeVideo
+	log.Println("WHEPSession.TrackMultiCodec: Binding VideoTrack Type for", t.streamID, "-", t.currentPayloadType)
+	t.kind = webrtc.RTPCodecTypeVideo
 	return webrtc.RTPCodecParameters{
 		RTPCodecCapability: webrtc.RTPCodecCapability{
 			MimeType:     videoCodecParameters.MimeType,
@@ -121,40 +121,40 @@ func (track *TrackMultiCodec) Bind(ctx webrtc.TrackLocalContext) (webrtc.RTPCode
 	}, nil
 }
 
-func (track *TrackMultiCodec) Unbind(context webrtc.TrackLocalContext) error {
+func (t *TrackMultiCodec) Unbind(context webrtc.TrackLocalContext) error {
 	return nil
 }
 
-func (track *TrackMultiCodec) WriteRTP(packet *rtp.Packet, codec TrackCodeType) error {
-	packet.SSRC = uint32(track.ssrc)
+func (t *TrackMultiCodec) WriteRTP(packet *rtp.Packet, codec TrackCodeType) error {
+	packet.SSRC = uint32(t.ssrc)
 
-	if codec != track.codec {
-		log.Println("WHEPSession.TrackMultiCodec.WriteRTP: Setting Codec on", track.streamID, "(", track.RID(), ")", "from", track.codec, "to", codec)
-		track.codec = codec
+	if codec != t.codec {
+		log.Println("WHEPSession.TrackMultiCodec.WriteRTP: Setting Codec on", t.streamID, "(", t.RID(), ")", "from", t.codec, "to", codec)
+		t.codec = codec
 
-		switch track.codec {
+		switch t.codec {
 		case VideoTrackCodecH264:
-			track.currentPayloadType = track.payloadTypeH264
+			t.currentPayloadType = t.payloadTypeH264
 		case VideoTrackCodecH265:
-			track.currentPayloadType = track.payloadTypeH265
+			t.currentPayloadType = t.payloadTypeH265
 		case VideoTrackCodecVP8:
-			track.currentPayloadType = track.payloadTypeVP8
+			t.currentPayloadType = t.payloadTypeVP8
 		case VideoTrackCodecVP9:
-			track.currentPayloadType = track.payloadTypeVP9
+			t.currentPayloadType = t.payloadTypeVP9
 		case VideoTrackCodecAV1:
-			track.currentPayloadType = track.payloadTypeAV1
+			t.currentPayloadType = t.payloadTypeAV1
 		case AudioTrackCodecOpus:
-			track.currentPayloadType = track.payloadTypeOpus
+			t.currentPayloadType = t.payloadTypeOpus
 		}
 	}
 
-	packet.PayloadType = track.currentPayloadType
+	packet.PayloadType = t.currentPayloadType
 
-	if _, err := track.writeStream.WriteRTP(&packet.Header, packet.Payload); err != nil {
-		track.errorCount += 1
+	if _, err := t.writeStream.WriteRTP(&packet.Header, packet.Payload); err != nil {
+		t.errorCount += 1
 
-		if track.errorCount%50 == 0 {
-			log.Println("WHIPSession.TrackMultiCodec.WriteRTP.Error(", track.errorCount, ")", err)
+		if t.errorCount%50 == 0 {
+			log.Println("WHIPSession.TrackMultiCodec.WriteRTP.Error(", t.errorCount, ")", err)
 			return err
 		}
 	}
