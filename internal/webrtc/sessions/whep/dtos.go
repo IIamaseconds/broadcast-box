@@ -1,6 +1,6 @@
 package whep
 
-type WhepSessionStateDto struct {
+type SessionState struct {
 	Id string `json:"id"`
 
 	AudioLayerCurrent   string `json:"audioLayerCurrent"`

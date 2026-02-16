@@ -82,7 +82,7 @@ func (manager *SessionManager) GetSessionById(streamKey string) (session *sessio
 }
 
 // Gets the current state of all sessions
-func (manager *SessionManager) GetSessionStates(includePrivateStreams bool) (result []session.StreamSessionDto) {
+func (manager *SessionManager) GetSessionStates(includePrivateStreams bool) (result []session.StreamSessionState) {
 	log.Println("SessionManager.GetSessionStates: IsAdmin", includePrivateStreams)
 	manager.sessionsLock.RLock()
 	copiedSessions := make(map[string]*session.Session)
@@ -97,12 +97,12 @@ func (manager *SessionManager) GetSessionStates(includePrivateStreams bool) (res
 			continue
 		}
 
-		streamSession := session.StreamSessionDto{
+		streamSession := session.StreamSessionState{
 			StreamKey:   s.StreamKey,
 			StreamStart: s.StreamStart,
 			IsPublic:    s.IsPublic,
 			MOTD:        s.MOTD,
-			Sessions:    []whep.WhepSessionStateDto{},
+			Sessions:    []whep.SessionState{},
 			VideoTracks: []session.VideoTrackState{},
 			AudioTracks: []session.AudioTrackState{},
 		}

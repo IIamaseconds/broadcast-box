@@ -79,7 +79,7 @@ func (whepSession *WhepSession) Close() {
 }
 
 // Get the current status of the WHEP session
-func (whepSession *WhepSession) GetWhepSessionStatus() (state WhepSessionStateDto) {
+func (whepSession *WhepSession) GetWhepSessionStatus() (state SessionState) {
 	whepSession.AudioLock.RLock()
 	whepSession.VideoLock.Lock()
 	whepSession.updateVideoBitrateLocked(time.Now())
@@ -87,7 +87,7 @@ func (whepSession *WhepSession) GetWhepSessionStatus() (state WhepSessionStateDt
 	currentAudioLayer := whepSession.AudioLayerCurrent.Load().(string)
 	currentVideoLayer := whepSession.VideoLayerCurrent.Load().(string)
 
-	state = WhepSessionStateDto{
+	state = SessionState{
 		Id: whepSession.SessionId,
 
 		AudioLayerCurrent:   currentAudioLayer,

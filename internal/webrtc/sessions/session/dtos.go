@@ -15,7 +15,7 @@ type WhipSessionStatus struct {
 }
 
 // Information for a whip session
-type StreamSessionDto struct {
+type StreamSessionState struct {
 	StreamKey   string    `json:"streamKey"`
 	IsPublic    bool      `json:"isPublic"`
 	MOTD        string    `json:"motd"`
@@ -24,7 +24,7 @@ type StreamSessionDto struct {
 	AudioTracks []AudioTrackState `json:"audioTracks"`
 	VideoTracks []VideoTrackState `json:"videoTracks"`
 
-	Sessions []whep.WhepSessionStateDto `json:"sessions"`
+	Sessions []whep.SessionState `json:"sessions"`
 }
 
 type AudioTrackState struct {
