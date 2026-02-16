@@ -71,8 +71,6 @@ func (whip *WhipSession) RemoveTracks() {
 	whip.AudioTracks = make(map[string]*AudioTrack)
 	whip.VideoTracks = make(map[string]*VideoTrack)
 	whip.TracksLock.Unlock()
-
-	whip.OnTrackChangeChannel <- struct{}{}
 }
 
 // Get highest prioritized audio track in the whip session

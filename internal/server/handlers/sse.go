@@ -1,17 +1,20 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/glimesh/broadcast-box/internal/environment"
 	"github.com/glimesh/broadcast-box/internal/server/helpers"
 	"github.com/glimesh/broadcast-box/internal/webrtc/sessions/manager"
+	"github.com/google/uuid"
 )
 
 func sseHandler(responseWriter http.ResponseWriter, request *http.Request) {
@@ -34,79 +37,94 @@ func sseHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	responseController := http.NewResponseController(responseWriter)
 
-	// Setup WHEP/WHIP session for SSE feed
-	sseChannel := getWhipSessionChannel(sessionId)
+	var writeLock sync.Mutex
+	writeEvent := func(writeCtx context.Context, msg string) bool {
+		if msg == "" || writeCtx.Err() != nil {
+			return false
+		}
 
-	if sseChannel == nil {
-		sseChannel = getWhepSessionChannel(sessionId)
+		writeLock.Lock()
+		defer writeLock.Unlock()
+
+		if debugSseMessages {
+			log.Println("API.SSE Sending:", msg)
+		}
+
+		if err := responseController.SetWriteDeadline(time.Now().Add(writeTimeout)); err != nil && !errors.Is(err, http.ErrNotSupported) {
+			log.Println("API.SSE SetWriteDeadline error:", err)
+			return false
+		}
+
+		_, err := fmt.Fprintf(responseWriter, "%s\n", msg)
+		if err == nil {
+			flusher.Flush()
+		}
+
+		if deadlineErr := responseController.SetWriteDeadline(time.Time{}); deadlineErr != nil && !errors.Is(deadlineErr, http.ErrNotSupported) {
+			log.Println("API.SSE ClearWriteDeadline error:", deadlineErr)
+			return false
+		}
+
+		if err != nil {
+			if errors.Is(err, os.ErrDeadlineExceeded) {
+				log.Println("API.SSE Write timeout")
+			} else {
+				log.Println("API.SSE Write error:", err)
+			}
+			return false
+		}
+
+		return true
 	}
 
-	if sseChannel == nil {
-		helpers.LogHttpError(responseWriter, "Invalid request", http.StatusBadRequest)
+	if streamSession, whepSession, foundSession := manager.SessionsManager.GetSessionAndWhepById(sessionId); foundSession {
+		subscriberCtx, subscriberCancel := context.WithCancel(ctx)
+		defer subscriberCancel()
+
+		subscriberID := uuid.NewString()
+		subscriberWrite := func(msg string) bool {
+			return writeEvent(subscriberCtx, msg)
+		}
+		if !whepSession.AddSSESubscriber(subscriberID, subscriberWrite, subscriberCancel) {
+			helpers.LogHttpError(responseWriter, "Invalid request", http.StatusBadRequest)
+			return
+		}
+		defer whepSession.RemoveSSESubscriber(subscriberID)
+
+		if !subscriberWrite(streamSession.GetSessionStatsEvent()) {
+			return
+		}
+
+		host := streamSession.Host.Load()
+		if host != nil && !subscriberWrite(host.GetAvailableLayersEvent()) {
+			return
+		}
+
+		<-subscriberCtx.Done()
+		log.Println("API.SSE: Client disconnected")
 		return
 	}
 
-	for {
-		select {
-		case <-ctx.Done():
-			log.Println("API.SSE: Client disconnected")
+	if streamSession, foundSession := manager.SessionsManager.GetSessionByHostSessionId(sessionId); foundSession {
+		if !writeEvent(ctx, streamSession.GetSessionStatsEvent()) {
 			return
+		}
 
-		case msg, ok := <-sseChannel:
-			if debugSseMessages {
-				log.Println("API.SSE Sending:", msg)
-			}
+		ticker := time.NewTicker(5 * time.Second)
+		defer ticker.Stop()
 
-			if !ok || msg == "close" {
-				log.Println("API.SSE: Channel closed")
+		for {
+			select {
+			case <-ctx.Done():
+				log.Println("API.SSE: Client disconnected")
 				return
-			}
-
-			if err := responseController.SetWriteDeadline(time.Now().Add(writeTimeout)); err != nil && !errors.Is(err, http.ErrNotSupported) {
-				log.Println("API.SSE SetWriteDeadline error:", err)
-				return
-			}
-
-			_, err := fmt.Fprintf(responseWriter, "%s\n", msg)
-			if err == nil {
-				flusher.Flush()
-			}
-
-			if deadlineErr := responseController.SetWriteDeadline(time.Time{}); deadlineErr != nil && !errors.Is(deadlineErr, http.ErrNotSupported) {
-				log.Println("API.SSE ClearWriteDeadline error:", deadlineErr)
-				return
-			}
-
-			if err != nil {
-				if errors.Is(err, os.ErrDeadlineExceeded) {
-					log.Println("API.SSE Write timeout")
-				} else {
-					log.Println("API.SSE Write error:", err)
+			case <-ticker.C:
+				if !writeEvent(ctx, streamSession.GetSessionStatsEvent()) {
+					return
 				}
-				return
 			}
 		}
 	}
-}
 
-func getWhipSessionChannel(sessionId string) chan any {
-	var channel chan any
-	whipSession, ok := manager.SessionsManager.GetHostSessionById(sessionId)
-
-	if ok {
-		channel = whipSession.EventsChannel
-	}
-
-	return channel
-}
-
-func getWhepSessionChannel(sessionId string) chan any {
-	var channel chan any
-	whepSession, ok := manager.SessionsManager.GetWhepSessionById(sessionId)
-
-	if ok {
-		channel = whepSession.SseEventsChannel
-	}
-
-	return channel
+	helpers.LogHttpError(responseWriter, "Invalid request", http.StatusBadRequest)
 }

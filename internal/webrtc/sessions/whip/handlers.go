@@ -32,7 +32,6 @@ func (whip *WhipSession) onICEConnectionStateChangeHandler() func(webrtc.ICEConn
 func (whip *WhipSession) onTrackHandler(peerConnection *webrtc.PeerConnection, streamKey string) func(*webrtc.TrackRemote, *webrtc.RTPReceiver) {
 	return func(remoteTrack *webrtc.TrackRemote, rtpReceiver *webrtc.RTPReceiver) {
 		log.Println("WhipSession.PeerConnection.OnTrackHandler", whip.Id)
-		whip.OnTrackChangeChannel <- struct{}{}
 
 		if strings.HasPrefix(remoteTrack.Codec().MimeType, "audio") {
 			// Handle audio stream
@@ -41,9 +40,6 @@ func (whip *WhipSession) onTrackHandler(peerConnection *webrtc.PeerConnection, s
 			// Handle video stream
 			whip.VideoWriter(remoteTrack, streamKey, peerConnection)
 		}
-
-		// Fires when track has stopped
-		whip.OnTrackChangeChannel <- struct{}{}
 
 		log.Println("WhipSession.OnTrackHandler.TrackStopped", remoteTrack.RID())
 	}

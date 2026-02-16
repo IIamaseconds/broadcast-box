@@ -18,17 +18,12 @@ type (
 		PeerConnectionLock  sync.RWMutex
 		PeerConnection      *webrtc.PeerConnection
 
-		OnTrackChangeChannel chan struct{}
-		EventsChannel        chan any
-
 		// Protects AudioTrack, VideoTracks
 		TracksLock  sync.RWMutex
 		VideoTracks map[string]*VideoTrack
 		AudioTracks map[string]*AudioTrack
 
-		//TODO: WhepSessionsSnapshot should only contain information about the current state of the session, not
-		// references to chans and other types that cannot be json serialized.
-		// Create interface for the purpose and use that with the atomic specifically
+		// TODO: WhepSessionsSnapshot should contain serializable state, not runtime references.
 		WhepSessionsSnapshot atomic.Value
 	}
 

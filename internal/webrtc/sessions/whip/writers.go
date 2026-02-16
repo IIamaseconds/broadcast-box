@@ -6,7 +6,6 @@ import (
 	"log"
 	"math"
 	"strings"
-	"sync/atomic"
 	"time"
 
 	"github.com/glimesh/broadcast-box/internal/webrtc/codecs"
@@ -114,26 +113,8 @@ func (whip *WhipSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 	lastSequenceNumber := uint16(0)
 	lastSequenceNumberSet := false
 
-	var bytesReceived atomic.Uint64
-
-	// Calculate bitrate
-	go func() {
-		ticker := time.NewTicker(1 * time.Second)
-		defer ticker.Stop()
-
-		trackedBytesReceived := uint64(0)
-
-		for {
-			select {
-			case <-whip.ActiveContext.Done():
-				return
-			case <-ticker.C:
-				currentBytesReceived := bytesReceived.Load()
-				track.Bitrate.Store(currentBytesReceived - trackedBytesReceived)
-				trackedBytesReceived = currentBytesReceived
-			}
-		}
-	}()
+	bitrateWindowStart := time.Now()
+	bitrateWindowBytes := uint64(0)
 
 	rtpPkt := &rtp.Packet{}
 	pktBuf := make([]byte, 1500)
@@ -167,11 +148,18 @@ func (whip *WhipSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 		}
 
 		track.PacketsReceived.Add(1)
-		bytesReceived.Add(uint64(rtpRead))
+		bitrateWindowBytes += uint64(rtpRead)
 
 		isKeyframe := isPacketKeyframe(rtpPkt, codec, depacketizer)
 		if isKeyframe {
 			track.LastKeyFrame.Store(time.Now())
+		}
+
+		now := time.Now()
+		if elapsed := now.Sub(bitrateWindowStart); elapsed >= time.Second {
+			track.Bitrate.Store(uint64(float64(bitrateWindowBytes) / elapsed.Seconds()))
+			bitrateWindowStart = now
+			bitrateWindowBytes = 0
 		}
 
 		timeDiff := int64(rtpPkt.Timestamp) - int64(lastTimestamp)

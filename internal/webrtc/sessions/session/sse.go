@@ -2,7 +2,6 @@ package session
 
 import (
 	"log"
-	"maps"
 
 	"github.com/glimesh/broadcast-box/internal/webrtc/sessions/whep"
 	"github.com/glimesh/broadcast-box/internal/webrtc/utils"
@@ -24,24 +23,18 @@ func (session *Session) GetSessionStatsEvent() string {
 func (session *Session) AnnounceStreamStartToWhepClients() {
 	log.Println("Session.AnnounceStreamStartToWhepClients:", session.StreamKey)
 
-	// Lock, copy session data, then unlock
 	session.WhepSessionsLock.RLock()
-	whepSessionsCopy := make(map[string]*whep.WhepSession)
-	maps.Copy(whepSessionsCopy, session.WhepSessions)
+	whepSessions := make([]*whep.WhepSession, 0, len(session.WhepSessions))
+	for _, whepSession := range session.WhepSessions {
+		whepSessions = append(whepSessions, whepSession)
+	}
 	session.WhepSessionsLock.RUnlock()
 
-	// Generate layer info outside lock
 	streamStartMessage := "event: streamStart\ndata:\n"
 
-	// Send to each WHEP session
-	for _, whepSession := range whepSessionsCopy {
+	for _, whepSession := range whepSessions {
 		if !whepSession.IsSessionClosed.Load() {
-			// Announce to frontend client
-			select {
-			case whepSession.SseEventsChannel <- streamStartMessage:
-			default:
-				log.Println("WhepSession.AnnounceStreamStartToWhepClients: Channel full, skipping update (SessionId:", whepSession.SessionId, ")")
-			}
+			whepSession.BroadcastSSE(streamStartMessage)
 		}
 	}
 }

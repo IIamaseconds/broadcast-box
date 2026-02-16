@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"log"
+	"time"
 
 	"github.com/glimesh/broadcast-box/internal/webrtc/codecs"
 )
@@ -55,6 +56,7 @@ func (whepSession *WhepSession) SendVideoPacket(packet codecs.TrackPacket) {
 	whepSession.VideoPacketsWritten += 1
 	whepSession.VideoSequenceNumber = uint16(whepSession.VideoSequenceNumber) + uint16(packet.SequenceDiff)
 	whepSession.VideoTimestamp = uint32(int64(whepSession.VideoTimestamp) + packet.TimeDiff)
+	whepSession.updateVideoBitrateLocked(time.Now())
 	videoSequenceNumber := whepSession.VideoSequenceNumber
 	videoTimestamp := whepSession.VideoTimestamp
 	videoTrack := whepSession.VideoTrack

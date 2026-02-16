@@ -42,7 +42,6 @@ func (manager *SessionManager) addSession(profile authorization.PublicProfile) (
 	manager.sessions[profile.StreamKey] = s
 	manager.sessionsLock.Unlock()
 
-	go s.Snapshot()
 	go func() {
 		<-activeContext.Done()
 		log.Println("SessionManager.Session.Done")
@@ -175,6 +174,11 @@ func (manager *SessionManager) UpdateProfile(profile *authorization.PersonalProf
 
 // Get Session by id
 func (manager *SessionManager) GetWhepSessionById(sessionId string) (whep *whep.WhepSession, foundSession bool) {
+	_, whepSession, foundSession := manager.GetSessionAndWhepById(sessionId)
+	return whepSession, foundSession
+}
+
+func (manager *SessionManager) GetSessionAndWhepById(sessionId string) (streamSession *session.Session, whepSession *whep.WhepSession, foundSession bool) {
 	manager.sessionsLock.RLock()
 	defer manager.sessionsLock.RUnlock()
 
@@ -183,11 +187,11 @@ func (manager *SessionManager) GetWhepSessionById(sessionId string) (whep *whep.
 		whepSession, ok := session.WhepSessions[sessionId]
 		session.WhepSessionsLock.RUnlock()
 		if ok {
-			return whepSession, true
+			return session, whepSession, true
 		}
 	}
 
-	return nil, false
+	return nil, nil, false
 }
 
 func (manager *SessionManager) GetHostSessionById(sessionId string) (host *whip.WhipSession, foundSession bool) {
