@@ -12,16 +12,16 @@ import (
 	"github.com/glimesh/broadcast-box/internal/webrtc/sessions/whip"
 )
 
-// Prepare the Whip Session Manager
+// Prepare the WHIP Session Manager
 func (manager *SessionManager) Setup() {
-	log.Println("WhipSessionManager.Setup")
+	log.Println("WHIPSessionManager.Setup")
 
 	manager.sessions = make(map[string]*session.Session)
 }
 
 // Add new session
 func (manager *SessionManager) addSession(profile authorization.PublicProfile) (s *session.Session, err error) {
-	log.Println("SessionManager.AddWhipSession")
+	log.Println("SessionManager.AddWHIPSession")
 	activeContext, activeContextCancel := context.WithCancel(context.Background())
 
 	s = &session.Session{
@@ -34,7 +34,7 @@ func (manager *SessionManager) addSession(profile authorization.PublicProfile) (
 		ActiveContext:       activeContext,
 		ActiveContextCancel: activeContextCancel,
 
-		WhepSessions: map[string]*whep.WhepSession{},
+		WHEPSessions: map[string]*whep.WHEPSession{},
 	}
 
 	s.HasHost.Store(true)
@@ -56,13 +56,13 @@ func (manager *SessionManager) addSession(profile authorization.PublicProfile) (
 }
 
 // Get the stream requested, or create it, and add it to the sessions context
-func (manager *SessionManager) GetOrAddSession(profile authorization.PublicProfile, isWhip bool) (session *session.Session, err error) {
-	session, ok := manager.GetSessionById(profile.StreamKey)
+func (manager *SessionManager) GetOrAddSession(profile authorization.PublicProfile, isWHIP bool) (session *session.Session, err error) {
+	session, ok := manager.GetSessionByID(profile.StreamKey)
 
 	if !ok {
 		log.Println("SessionManager.GetOrAddStream: Adding", profile.StreamKey)
 		session, err = manager.addSession(profile)
-	} else if isWhip {
+	} else if isWHIP {
 		log.Println("SessionManager.GetOrAddStream: Updating", profile.StreamKey)
 		session.UpdateStreamStatus(profile)
 	}
@@ -71,8 +71,8 @@ func (manager *SessionManager) GetOrAddSession(profile authorization.PublicProfi
 }
 
 // Get Session by id
-func (manager *SessionManager) GetSessionById(streamKey string) (session *session.Session, foundSession bool) {
-	log.Println("SessionManager.GetSessionById", streamKey)
+func (manager *SessionManager) GetSessionByID(streamKey string) (session *session.Session, foundSession bool) {
+	log.Println("SessionManager.GetSessionByID", streamKey)
 
 	manager.sessionsLock.RLock()
 	defer manager.sessionsLock.RUnlock()
@@ -143,13 +143,13 @@ func (manager *SessionManager) GetSessionStates(includePrivateStreams bool) (res
 			host.TracksLock.RUnlock()
 		}
 
-		s.WhepSessionsLock.RLock()
-		for _, whep := range s.WhepSessions {
+		s.WHEPSessionsLock.RLock()
+		for _, whep := range s.WHEPSessions {
 			if !whep.IsSessionClosed.Load() {
-				streamSession.Sessions = append(streamSession.Sessions, whep.GetWhepSessionStatus())
+				streamSession.Sessions = append(streamSession.Sessions, whep.GetWHEPSessionStatus())
 			}
 		}
-		s.WhepSessionsLock.RUnlock()
+		s.WHEPSessionsLock.RUnlock()
 
 		result = append(result, streamSession)
 	}
@@ -159,7 +159,7 @@ func (manager *SessionManager) GetSessionStates(includePrivateStreams bool) (res
 
 // Update the provided session information
 func (manager *SessionManager) UpdateProfile(profile *authorization.PersonalProfile) {
-	log.Println("WhipSessionManager.UpdateProfile")
+	log.Println("WHIPSessionManager.UpdateProfile")
 	manager.sessionsLock.RLock()
 	whipSession, ok := manager.sessions[profile.StreamKey]
 	manager.sessionsLock.RUnlock()
@@ -173,19 +173,19 @@ func (manager *SessionManager) UpdateProfile(profile *authorization.PersonalProf
 }
 
 // Get Session by id
-func (manager *SessionManager) GetWhepSessionById(sessionId string) (whep *whep.WhepSession, foundSession bool) {
-	_, whepSession, foundSession := manager.GetSessionAndWhepById(sessionId)
+func (manager *SessionManager) GetWHEPSessionByID(sessionID string) (whep *whep.WHEPSession, foundSession bool) {
+	_, whepSession, foundSession := manager.GetSessionAndWHEPByID(sessionID)
 	return whepSession, foundSession
 }
 
-func (manager *SessionManager) GetSessionAndWhepById(sessionId string) (streamSession *session.Session, whepSession *whep.WhepSession, foundSession bool) {
+func (manager *SessionManager) GetSessionAndWHEPByID(sessionID string) (streamSession *session.Session, whepSession *whep.WHEPSession, foundSession bool) {
 	manager.sessionsLock.RLock()
 	defer manager.sessionsLock.RUnlock()
 
 	for _, session := range manager.sessions {
-		session.WhepSessionsLock.RLock()
-		whepSession, ok := session.WhepSessions[sessionId]
-		session.WhepSessionsLock.RUnlock()
+		session.WHEPSessionsLock.RLock()
+		whepSession, ok := session.WHEPSessions[sessionID]
+		session.WHEPSessionsLock.RUnlock()
 		if ok {
 			return session, whepSession, true
 		}
@@ -194,7 +194,7 @@ func (manager *SessionManager) GetSessionAndWhepById(sessionId string) (streamSe
 	return nil, nil, false
 }
 
-func (manager *SessionManager) GetHostSessionById(sessionId string) (host *whip.WhipSession, foundSession bool) {
+func (manager *SessionManager) GetHostSessionByID(sessionID string) (host *whip.WHIPSession, foundSession bool) {
 	manager.sessionsLock.RLock()
 	defer manager.sessionsLock.RUnlock()
 
@@ -204,7 +204,7 @@ func (manager *SessionManager) GetHostSessionById(sessionId string) (host *whip.
 			continue
 		}
 
-		if sessionId == host.Id {
+		if sessionID == host.ID {
 			return host, true
 		}
 	}
@@ -212,7 +212,7 @@ func (manager *SessionManager) GetHostSessionById(sessionId string) (host *whip.
 	return nil, false
 }
 
-func (manager *SessionManager) GetSessionByHostSessionId(sessionId string) (session *session.Session, foundSession bool) {
+func (manager *SessionManager) GetSessionByHostSessionID(sessionID string) (session *session.Session, foundSession bool) {
 	manager.sessionsLock.RLock()
 	defer manager.sessionsLock.RUnlock()
 
@@ -222,7 +222,7 @@ func (manager *SessionManager) GetSessionByHostSessionId(sessionId string) (sess
 			continue
 		}
 
-		if sessionId == host.Id {
+		if sessionID == host.ID {
 			return session, true
 		}
 	}

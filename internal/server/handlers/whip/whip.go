@@ -16,9 +16,9 @@ import (
 	"github.com/glimesh/broadcast-box/internal/webrtc"
 )
 
-func WhipHandler(responseWriter http.ResponseWriter, request *http.Request) {
+func WHIPHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost && request.Method != http.MethodPatch && request.Method != http.MethodDelete {
-		helpers.LogHttpError(responseWriter, "Method not allowed", http.StatusMethodNotAllowed)
+		helpers.LogHTTPError(responseWriter, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -26,30 +26,30 @@ func WhipHandler(responseWriter http.ResponseWriter, request *http.Request) {
 
 	if authHeader == "" {
 		log.Println("Authorization was not set")
-		helpers.LogHttpError(responseWriter, "Authorization was not set", http.StatusBadRequest)
+		helpers.LogHTTPError(responseWriter, "Authorization was not set", http.StatusBadRequest)
 		return
 	}
 
 	token := helpers.ResolveBearerToken(authHeader)
 	if token == "" {
 		log.Println("Authorization was invalid")
-		helpers.LogHttpError(responseWriter, "Authorization was invalid", http.StatusUnauthorized)
+		helpers.LogHTTPError(responseWriter, "Authorization was invalid", http.StatusUnauthorized)
 		return
 	}
 
 	if request.Method == http.MethodDelete {
-		sessionId := getSessionIdFromWhipPath(request.URL.Path)
+		sessionID := getSessionIDFromWHIPPath(request.URL.Path)
 
-		if sessionId == "" {
+		if sessionID == "" {
 			log.Println("API.WHIP.Delete Error: Missing session id")
-			helpers.LogHttpError(responseWriter, "Missing session id", http.StatusBadRequest)
+			helpers.LogHTTPError(responseWriter, "Missing session id", http.StatusBadRequest)
 			return
 		}
 
-		log.Println("API.WHIP.Delete: Removing session", sessionId)
-		if err := deleteHandler(responseWriter, sessionId); err != nil {
+		log.Println("API.WHIP.Delete: Removing session", sessionID)
+		if err := deleteHandler(responseWriter, sessionID); err != nil {
 			log.Println("API.WHIP.Delete Error:", err)
-			helpers.LogHttpError(responseWriter, err.Error(), http.StatusBadRequest)
+			helpers.LogHTTPError(responseWriter, err.Error(), http.StatusBadRequest)
 		}
 
 		return
@@ -58,15 +58,15 @@ func WhipHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	offer, err := io.ReadAll(request.Body)
 	if err != nil || string(offer) == "" {
 		log.Println("Error reading offer")
-		helpers.LogHttpError(responseWriter, "error reading offer", http.StatusBadRequest)
+		helpers.LogHTTPError(responseWriter, "error reading offer", http.StatusBadRequest)
 		return
 	}
 
 	var userProfile authorization.PublicProfile
 
 	// Stream requires webhook validation
-	if webhookUrl := os.Getenv(environment.WEBHOOK_URL); webhookUrl != "" {
-		streamKey, err := webhook.CallWebhook(webhookUrl, webhook.WhipConnect, token, request)
+	if webhookURL := os.Getenv(environment.WebhookURL); webhookURL != "" {
+		streamKey, err := webhook.CallWebhook(webhookURL, webhook.WHIPConnect, token, request)
 		if err != nil {
 			responseWriter.WriteHeader(http.StatusUnauthorized)
 			return
@@ -80,10 +80,10 @@ func WhipHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// Stream profile policy
-	switch os.Getenv(environment.STREAM_PROFILE_POLICY) {
+	switch os.Getenv(environment.StreamProfilePolicy) {
 	// Only approved profiles are allowed to stream
-	case authorization.STREAM_POLICY_RESERVED_ONLY:
-		log.Println("Policy:", authorization.STREAM_POLICY_RESERVED_ONLY)
+	case authorization.StreamPolicyReservedOnly:
+		log.Println("Policy:", authorization.StreamPolicyReservedOnly)
 		profile, err := authorization.GetPublicProfile(token)
 		if err != nil {
 			log.Println("Unauthorized login attempt with bearer", token)
@@ -93,7 +93,7 @@ func WhipHandler(responseWriter http.ResponseWriter, request *http.Request) {
 		userProfile = *profile
 
 	default:
-		log.Println("Policy:", authorization.STREAM_POLICY_WITH_RESERVED)
+		log.Println("Policy:", authorization.StreamPolicyWithReserved)
 
 		// If using a streamKey check if it has been reserved
 		if authorization.IsProfileReserved(token) {
@@ -122,35 +122,35 @@ func WhipHandler(responseWriter http.ResponseWriter, request *http.Request) {
 
 		if contentType := request.Header.Get("Content-Type"); contentType != "application/trickle-ice-sdpfrag" {
 			log.Println("API.WHIP.Patch Error: Invalid patch request")
-			helpers.LogHttpError(responseWriter, "Invalid patch request", http.StatusBadRequest)
+			helpers.LogHTTPError(responseWriter, "Invalid patch request", http.StatusBadRequest)
 			return
 		}
 
-		sessionId := getSessionIdFromWhipPath(request.URL.Path)
+		sessionID := getSessionIDFromWHIPPath(request.URL.Path)
 
-		if sessionId == "" {
+		if sessionID == "" {
 			log.Println("API.WHIP.Patch Error: Missing session id")
-			helpers.LogHttpError(responseWriter, "Missing session id", http.StatusBadRequest)
+			helpers.LogHTTPError(responseWriter, "Missing session id", http.StatusBadRequest)
 			return
 		}
 
-		log.Println("API.WHIP.Patch: Patching session", sessionId)
-		if err := patchHandler(responseWriter, request, sessionId, string(offer)); err != nil {
+		log.Println("API.WHIP.Patch: Patching session", sessionID)
+		if err := patchHandler(responseWriter, request, sessionID, string(offer)); err != nil {
 			log.Println("API.WHIP.Patch Error:", err)
-			helpers.LogHttpError(responseWriter, err.Error(), http.StatusBadRequest)
+			helpers.LogHTTPError(responseWriter, err.Error(), http.StatusBadRequest)
 		}
 
 		return
 	}
 
-	whipAnswer, sessionId, err := webrtc.WHIP(string(offer), userProfile)
+	whipAnswer, sessionID, err := webrtc.WHIP(string(offer), userProfile)
 	if err != nil {
-		helpers.LogHttpError(responseWriter, err.Error(), http.StatusBadRequest)
+		helpers.LogHTTPError(responseWriter, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	responseWriter.Header().Add("Link", `<`+"/api/sse/"+sessionId+`>; rel="urn:ietf:params:whep:ext:core:server-sent-events"; events="status"`)
-	responseWriter.Header().Add("Location", "/api/whip/"+sessionId)
+	responseWriter.Header().Add("Link", `<`+"/api/sse/"+sessionID+`>; rel="urn:ietf:params:whep:ext:core:server-sent-events"; events="status"`)
+	responseWriter.Header().Add("Location", "/api/whip/"+sessionID)
 	responseWriter.Header().Add("Content-Type", "application/sdp")
 	responseWriter.WriteHeader(http.StatusCreated)
 
@@ -162,24 +162,14 @@ func WhipHandler(responseWriter http.ResponseWriter, request *http.Request) {
 
 }
 
-func patchHandler(res http.ResponseWriter, r *http.Request, sessionId, body string) error {
+func patchHandler(res http.ResponseWriter, r *http.Request, sessionID, body string) error {
 	mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil || mediaType != "application/trickle-ice-sdpfrag" {
-		helpers.LogHttpError(res, "invalid content type", http.StatusUnsupportedMediaType)
+		helpers.LogHTTPError(res, "invalid content type", http.StatusUnsupportedMediaType)
 		return err
 	}
 
-	if err = webrtc.HandleWhipPatch(sessionId, body); err != nil {
-		return err
-	}
-
-	res.WriteHeader(http.StatusNoContent)
-
-	return nil
-}
-
-func deleteHandler(res http.ResponseWriter, sessionId string) error {
-	if err := webrtc.HandleWhipDelete(sessionId); err != nil {
+	if err = webrtc.HandleWHIPPatch(sessionID, body); err != nil {
 		return err
 	}
 
@@ -188,7 +178,17 @@ func deleteHandler(res http.ResponseWriter, sessionId string) error {
 	return nil
 }
 
-func getSessionIdFromWhipPath(path string) string {
+func deleteHandler(res http.ResponseWriter, sessionID string) error {
+	if err := webrtc.HandleWHIPDelete(sessionID); err != nil {
+		return err
+	}
+
+	res.WriteHeader(http.StatusNoContent)
+
+	return nil
+}
+
+func getSessionIDFromWHIPPath(path string) string {
 	path = strings.Replace(path, "/api/whip", "", 1)
 	segments := strings.Split(path, "/")
 	return strings.TrimSpace(segments[len(segments)-1])

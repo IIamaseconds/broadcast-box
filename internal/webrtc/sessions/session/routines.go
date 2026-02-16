@@ -24,20 +24,20 @@ import (
 // }
 
 // Waits for WHEP disconnect and removes the session
-func (session *Session) handleWhepConnection(whepSession *whep.WhepSession) {
-	log.Println("Session.WhepSession.Connected:", session.StreamKey)
+func (session *Session) handleWHEPConnection(whepSession *whep.WHEPSession) {
+	log.Println("Session.WHEPSession.Connected:", session.StreamKey)
 
 	<-whepSession.ActiveContext.Done()
 
-	log.Println("Session.WhepSession.Disconnected:", session.StreamKey, " - ", whepSession.SessionId)
-	session.removeWhep(whepSession.SessionId)
+	log.Println("Session.WHEPSession.Disconnected:", session.StreamKey, " - ", whepSession.SessionID)
+	session.removeWHEP(whepSession.SessionID)
 }
 
-func (session *Session) handleWhepVideoRtcpSender(whepSession *whep.WhepSession, rtcpSender *webrtc.RTPSender) {
+func (session *Session) handleWHEPVideoRTCPSender(whepSession *whep.WHEPSession, rtcpSender *webrtc.RTPSender) {
 	for {
 		rtcpPackets, _, rtcpErr := rtcpSender.ReadRTCP()
 		if rtcpErr != nil {
-			log.Println("WhepSession.ReadRTCP.Error:", rtcpErr)
+			log.Println("WHEPSession.ReadRTCP.Error:", rtcpErr)
 			return
 		}
 
@@ -84,12 +84,12 @@ func (session *Session) hostStatusLoop() {
 			} else if session.Host.Load() != nil {
 				status := session.GetSessionStatsEvent()
 
-				session.WhepSessionsLock.RLock()
-				whepSessions := make([]*whep.WhepSession, 0, len(session.WhepSessions))
-				for _, whepSession := range session.WhepSessions {
+				session.WHEPSessionsLock.RLock()
+				whepSessions := make([]*whep.WHEPSession, 0, len(session.WHEPSessions))
+				for _, whepSession := range session.WHEPSessions {
 					whepSessions = append(whepSessions, whepSession)
 				}
-				session.WhepSessionsLock.RUnlock()
+				session.WHEPSessionsLock.RUnlock()
 
 				for _, whepSession := range whepSessions {
 					whepSession.BroadcastSSE(status)

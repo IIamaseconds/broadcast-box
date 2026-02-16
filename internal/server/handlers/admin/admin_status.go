@@ -16,7 +16,7 @@ func StatusHandler(responseWriter http.ResponseWriter, request *http.Request) {
 
 	sessionResult := verifyAdminSession(request)
 	if !sessionResult.IsValid {
-		helpers.LogHttpError(responseWriter, sessionResult.ErrorMessage, http.StatusUnauthorized)
+		helpers.LogHTTPError(responseWriter, sessionResult.ErrorMessage, http.StatusUnauthorized)
 		return
 	}
 

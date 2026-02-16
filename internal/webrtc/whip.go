@@ -11,7 +11,7 @@ import (
 )
 
 // Initialize WHIP session for incoming stream
-func WHIP(offer string, profile authorization.PublicProfile) (sdp string, sessionId string, err error) {
+func WHIP(offer string, profile authorization.PublicProfile) (sdp string, sessionID string, err error) {
 	log.Println("WHIP.Offer.Requested", profile.StreamKey, profile.MOTD)
 
 	if err := utils.ValidateOffer(offer); err != nil {
@@ -23,12 +23,12 @@ func WHIP(offer string, profile authorization.PublicProfile) (sdp string, sessio
 		return "", "", err
 	}
 
-	peerConnection, err := peerconnection.CreateWhipPeerConnection(offer)
+	peerConnection, err := peerconnection.CreateWHIPPeerConnection(offer)
 	if err != nil || peerConnection == nil {
-		log.Println("WHIP.CreateWhipPeerConnection.Failed", err)
+		log.Println("WHIP.CreateWHIPPeerConnection.Failed", err)
 		if peerConnection != nil {
 			if closeErr := peerConnection.Close(); closeErr != nil {
-				log.Println("WHIP.CreateWhipPeerConnection.Close.Failed", closeErr)
+				log.Println("WHIP.CreateWHIPPeerConnection.Close.Failed", closeErr)
 			}
 		}
 		return "", "", err
@@ -44,7 +44,7 @@ func WHIP(offer string, profile authorization.PublicProfile) (sdp string, sessio
 	}
 
 	sdp = utils.DebugOutputAnswer(utils.AppendCandidateToAnswer(peerConnection.LocalDescription().SDP))
-	sessionId = host.Id
+	sessionID = host.ID
 	err = nil
 	log.Println("WHIP.Offer.Accepted", profile.StreamKey, profile.MOTD)
 	return

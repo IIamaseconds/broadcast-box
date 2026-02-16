@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func GetPublicIp() string {
+func GetPublicIP() string {
 	req, err := http.Get("http://ip-api.com/json/")
 
 	if err != nil {

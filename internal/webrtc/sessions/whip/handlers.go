@@ -7,8 +7,8 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
-func (whip *WhipSession) RegisterWhipHandlers(peerConnection *webrtc.PeerConnection, streamKey string) {
-	log.Println("WhipSession.RegisterHandlers")
+func (whip *WHIPSession) RegisterWHIPHandlers(peerConnection *webrtc.PeerConnection, streamKey string) {
+	log.Println("WHIPSession.RegisterHandlers")
 
 	// PeerConnection OnTrack handler
 	whip.PeerConnection.OnTrack(whip.onTrackHandler(peerConnection, streamKey))
@@ -20,18 +20,18 @@ func (whip *WhipSession) RegisterWhipHandlers(peerConnection *webrtc.PeerConnect
 	whip.PeerConnection.OnConnectionStateChange(whip.onConnectionStateChange())
 }
 
-func (whip *WhipSession) onICEConnectionStateChangeHandler() func(webrtc.ICEConnectionState) {
+func (whip *WHIPSession) onICEConnectionStateChangeHandler() func(webrtc.ICEConnectionState) {
 	return func(state webrtc.ICEConnectionState) {
 		if state == webrtc.ICEConnectionStateFailed || state == webrtc.ICEConnectionStateClosed {
-			log.Println("WhipSession.PeerConnection.OnICEConnectionStateChange", whip.Id)
+			log.Println("WHIPSession.PeerConnection.OnICEConnectionStateChange", whip.ID)
 			whip.ActiveContextCancel()
 		}
 	}
 }
 
-func (whip *WhipSession) onTrackHandler(peerConnection *webrtc.PeerConnection, streamKey string) func(*webrtc.TrackRemote, *webrtc.RTPReceiver) {
+func (whip *WHIPSession) onTrackHandler(peerConnection *webrtc.PeerConnection, streamKey string) func(*webrtc.TrackRemote, *webrtc.RTPReceiver) {
 	return func(remoteTrack *webrtc.TrackRemote, rtpReceiver *webrtc.RTPReceiver) {
-		log.Println("WhipSession.PeerConnection.OnTrackHandler", whip.Id)
+		log.Println("WHIPSession.PeerConnection.OnTrackHandler", whip.ID)
 
 		if strings.HasPrefix(remoteTrack.Codec().MimeType, "audio") {
 			// Handle audio stream
@@ -41,22 +41,22 @@ func (whip *WhipSession) onTrackHandler(peerConnection *webrtc.PeerConnection, s
 			whip.VideoWriter(remoteTrack, streamKey, peerConnection)
 		}
 
-		log.Println("WhipSession.OnTrackHandler.TrackStopped", remoteTrack.RID())
+		log.Println("WHIPSession.OnTrackHandler.TrackStopped", remoteTrack.RID())
 	}
 }
 
-func (whip *WhipSession) onConnectionStateChange() func(webrtc.PeerConnectionState) {
+func (whip *WHIPSession) onConnectionStateChange() func(webrtc.PeerConnectionState) {
 	return func(state webrtc.PeerConnectionState) {
-		log.Println("WhipSession.PeerConnection.OnConnectionStateChange", state)
+		log.Println("WHIPSession.PeerConnection.OnConnectionStateChange", state)
 
 		switch state {
 		case webrtc.PeerConnectionStateClosed:
 		case webrtc.PeerConnectionStateFailed:
-			log.Println("WhipSession.PeerConnection.OnConnectionStateChange: Host removed", whip.Id)
+			log.Println("WHIPSession.PeerConnection.OnConnectionStateChange: Host removed", whip.ID)
 			whip.ActiveContextCancel()
 
 		case webrtc.PeerConnectionStateConnected:
-			log.Println("WhipSession.PeerConnection.OnConnectionStateChange: Host connected", whip.Id)
+			log.Println("WHIPSession.PeerConnection.OnConnectionStateChange: Host connected", whip.ID)
 
 		}
 	}

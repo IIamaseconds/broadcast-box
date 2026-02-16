@@ -11,42 +11,42 @@ import (
 )
 
 type (
-	whepLayerRequestJson struct {
-		MediaId    string `json:"mediaId"`
-		EncodingId string `json:"encodingId"`
+	whepLayerRequestJSON struct {
+		MediaID    string `json:"mediaId"`
+		EncodingID string `json:"encodingId"`
 	}
 )
 
 func layerChangeHandler(responseWriter http.ResponseWriter, request *http.Request) {
-	var requestContent whepLayerRequestJson
+	var requestContent whepLayerRequestJSON
 
 	if err := json.NewDecoder(request.Body).Decode(&requestContent); err != nil {
-		helpers.LogHttpError(responseWriter, err.Error(), http.StatusInternalServerError)
+		helpers.LogHTTPError(responseWriter, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	values := strings.Split(request.URL.RequestURI(), "/")
-	whepSessionId := values[len(values)-1]
-	whepSession, ok := manager.SessionsManager.GetWhepSessionById(whepSessionId)
+	whepSessionID := values[len(values)-1]
+	whepSession, ok := manager.SessionsManager.GetWHEPSessionByID(whepSessionID)
 
-	log.Println("Found WHEP session", whepSession.SessionId)
+	log.Println("Found WHEP session", whepSession.SessionID)
 
 	if !ok {
-		helpers.LogHttpError(responseWriter, "Could not find WHEP session", http.StatusBadRequest)
+		helpers.LogHTTPError(responseWriter, "Could not find WHEP session", http.StatusBadRequest)
 		return
 	}
 
-	if requestContent.MediaId == "1" {
-		log.Println("Setting Video Layer", requestContent.EncodingId)
-		whepSession.SetVideoLayer(requestContent.EncodingId)
+	if requestContent.MediaID == "1" {
+		log.Println("Setting Video Layer", requestContent.EncodingID)
+		whepSession.SetVideoLayer(requestContent.EncodingID)
 		return
 	}
 
-	if requestContent.MediaId == "2" {
-		log.Println("Setting Audio Layer", requestContent.EncodingId)
-		whepSession.SetAudioLayer(requestContent.EncodingId)
+	if requestContent.MediaID == "2" {
+		log.Println("Setting Audio Layer", requestContent.EncodingID)
+		whepSession.SetAudioLayer(requestContent.EncodingID)
 		return
 	}
 
-	helpers.LogHttpError(responseWriter, "Unknown media type", http.StatusBadRequest)
+	helpers.LogHTTPError(responseWriter, "Unknown media type", http.StatusBadRequest)
 }

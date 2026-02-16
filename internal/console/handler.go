@@ -10,7 +10,7 @@ import (
 
 func HandleConsoleFlags() {
 	createNewProfile := flag.Bool(createNewProfile, false, "Create a new stream profile from the -streamKey flag")
-	streamKey := flag.String(createNewProfile_StreamKey, "", "The stream key used to identify a streaming session")
+	streamKey := flag.String(createNewProfileStreamKey, "", "The stream key used to identify a streaming session")
 
 	flag.Parse()
 

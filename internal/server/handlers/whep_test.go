@@ -16,7 +16,7 @@ type whepWebhookPayload struct {
 	QueryParams map[string]string `json:"queryParams"`
 }
 
-func TestWhepHandlerCallsWebhook(t *testing.T) {
+func TestWHEPHandlerCallsWebhook(t *testing.T) {
 	payloads := make(chan whepWebhookPayload, 1)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -33,7 +33,7 @@ func TestWhepHandlerCallsWebhook(t *testing.T) {
 	}))
 	defer server.Close()
 
-	t.Setenv(environment.WEBHOOK_URL, server.URL)
+	t.Setenv(environment.WebhookURL, server.URL)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/whep?viewer=1", strings.NewReader("v=0"))
 	req.Header.Set("Authorization", "Bearer test_stream_key")
@@ -41,7 +41,7 @@ func TestWhepHandlerCallsWebhook(t *testing.T) {
 	req.RemoteAddr = "203.0.113.10:1234"
 
 	resp := httptest.NewRecorder()
-	WhepHandler(resp, req)
+	WHEPHandler(resp, req)
 
 	if resp.Code != http.StatusUnauthorized {
 		t.Fatalf("expected status %d, got %d", http.StatusUnauthorized, resp.Code)

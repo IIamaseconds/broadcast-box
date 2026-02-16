@@ -32,7 +32,7 @@ func RunNetworkTest() {
 
 	fmt.Println(networkTestIntroMessage)
 
-	err := run(whipHandlers.WhipHandler)
+	err := run(whipHandlers.WHIPHandler)
 	if err != nil {
 		fmt.Printf(networkTestFailedMessage, err)
 		os.Exit(1)
@@ -110,7 +110,7 @@ func run(whipHandler func(res http.ResponseWriter, req *http.Request)) error {
 		return err
 	}
 
-	httpAddress := os.Getenv(environment.HTTP_ADDRESS)
+	httpAddress := os.Getenv(environment.HTTPAddress)
 
 	firstMediaSection := answerParsed.MediaDescriptions[0]
 	filteredAttributes := []sdp.Attribute{}

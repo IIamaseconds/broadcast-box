@@ -29,9 +29,9 @@ func sseHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	responseWriter.Header().Add("Connection", "keep-alive")
 
 	values := strings.Split(request.URL.RequestURI(), "/")
-	sessionId := values[len(values)-1]
+	sessionID := values[len(values)-1]
 
-	debugSseMessages := strings.EqualFold(os.Getenv(environment.DEBUG_PRINT_SSE_MESSAGES), "true")
+	debugSseMessages := strings.EqualFold(os.Getenv(environment.DebugPrintSSEMessages), "true")
 	writeTimeout := 500 * time.Millisecond
 
 	ctx := request.Context()
@@ -77,7 +77,7 @@ func sseHandler(responseWriter http.ResponseWriter, request *http.Request) {
 		return true
 	}
 
-	if streamSession, whepSession, foundSession := manager.SessionsManager.GetSessionAndWhepById(sessionId); foundSession {
+	if streamSession, whepSession, foundSession := manager.SessionsManager.GetSessionAndWHEPByID(sessionID); foundSession {
 		subscriberCtx, subscriberCancel := context.WithCancel(ctx)
 		defer subscriberCancel()
 
@@ -86,7 +86,7 @@ func sseHandler(responseWriter http.ResponseWriter, request *http.Request) {
 			return writeEvent(subscriberCtx, msg)
 		}
 		if !whepSession.AddSSESubscriber(subscriberID, subscriberWrite, subscriberCancel) {
-			helpers.LogHttpError(responseWriter, "Invalid request", http.StatusBadRequest)
+			helpers.LogHTTPError(responseWriter, "Invalid request", http.StatusBadRequest)
 			return
 		}
 		defer whepSession.RemoveSSESubscriber(subscriberID)
@@ -105,7 +105,7 @@ func sseHandler(responseWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	if streamSession, foundSession := manager.SessionsManager.GetSessionByHostSessionId(sessionId); foundSession {
+	if streamSession, foundSession := manager.SessionsManager.GetSessionByHostSessionID(sessionID); foundSession {
 		if !writeEvent(ctx, streamSession.GetSessionStatsEvent()) {
 			return
 		}
@@ -126,5 +126,5 @@ func sseHandler(responseWriter http.ResponseWriter, request *http.Request) {
 		}
 	}
 
-	helpers.LogHttpError(responseWriter, "Invalid request", http.StatusBadRequest)
+	helpers.LogHTTPError(responseWriter, "Invalid request", http.StatusBadRequest)
 }

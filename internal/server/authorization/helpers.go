@@ -11,7 +11,7 @@ import (
 )
 
 func assureProfilePath() {
-	profilePath := os.Getenv(environment.STREAM_PROFILE_PATH)
+	profilePath := os.Getenv(environment.StreamProfilePath)
 
 	err := os.MkdirAll(profilePath, os.ModePerm)
 	if err != nil {
@@ -21,7 +21,7 @@ func assureProfilePath() {
 }
 
 func hasExistingStreamKey(streamKey string) bool {
-	profilePath := os.Getenv(environment.STREAM_PROFILE_PATH)
+	profilePath := os.Getenv(environment.StreamProfilePath)
 	files, err := os.ReadDir(profilePath)
 
 	if err != nil {
@@ -40,7 +40,7 @@ func hasExistingStreamKey(streamKey string) bool {
 }
 
 func hasExistingBearerToken(bearerToken string) bool {
-	profilePath := os.Getenv(environment.STREAM_PROFILE_PATH)
+	profilePath := os.Getenv(environment.StreamProfilePath)
 
 	files, err := os.ReadDir(profilePath)
 	if err != nil {
@@ -58,7 +58,7 @@ func hasExistingBearerToken(bearerToken string) bool {
 }
 
 func getProfileFileNameByStreamKey(streamKey string) (string, error) {
-	profilePath := os.Getenv(environment.STREAM_PROFILE_PATH)
+	profilePath := os.Getenv(environment.StreamProfilePath)
 
 	files, err := os.ReadDir(profilePath)
 	if err != nil {
@@ -78,7 +78,7 @@ func getProfileFileNameByStreamKey(streamKey string) (string, error) {
 }
 
 func getProfileFileNameByBearerToken(bearerToken string) (string, error) {
-	profilePath := os.Getenv(environment.STREAM_PROFILE_PATH)
+	profilePath := os.Getenv(environment.StreamProfilePath)
 
 	files, err := os.ReadDir(profilePath)
 	if err != nil {

@@ -26,8 +26,8 @@ type webhookResponse struct {
 type Action string
 
 const (
-	WhipConnect Action = "whip-connect"
-	WhepConnect Action = "whep-connect"
+	WHIPConnect Action = "whip-connect"
+	WHEPConnect Action = "whep-connect"
 )
 
 func CallWebhook(url string, action Action, bearerToken string, request *http.Request) (string, error) {

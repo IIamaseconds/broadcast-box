@@ -19,9 +19,9 @@ type ICEComponentServer struct {
 }
 
 func clientICEHandler(responseWriter http.ResponseWriter, request *http.Request) {
-	turnServers := os.Getenv(environment.TURN_SERVERS)
-	turnAuthKey := os.Getenv(environment.TURN_SERVER_AUTH_SECRET)
-	stunServers := os.Getenv(environment.STUN_SERVERS)
+	turnServers := os.Getenv(environment.TURNServers)
+	turnAuthKey := os.Getenv(environment.TURNServerAuthSecret)
+	stunServers := os.Getenv(environment.STUNServers)
 	var servers []ICEComponentServer
 
 	if turnServers == "" && stunServers == "" {
@@ -74,7 +74,7 @@ func clientICEHandler(responseWriter http.ResponseWriter, request *http.Request)
 	}
 
 	if err := json.NewEncoder(responseWriter).Encode(servers); err != nil {
-		helpers.LogHttpError(
+		helpers.LogHTTPError(
 			responseWriter,
 			"Internal Server Error",
 			http.StatusInternalServerError)

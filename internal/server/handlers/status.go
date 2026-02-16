@@ -26,11 +26,11 @@ func statusHandler(responseWriter http.ResponseWriter, request *http.Request) {
 func streamStatusHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	streamKey := request.URL.Query().Get("key")
 
-	session, ok := manager.SessionsManager.GetSessionById(streamKey)
+	session, ok := manager.SessionsManager.GetSessionByID(streamKey)
 
 	if !ok {
 		log.Println("Could not find active stream", streamKey)
-		helpers.LogHttpError(
+		helpers.LogHTTPError(
 			responseWriter,
 			"No active stream found",
 			http.StatusNotFound)
@@ -41,7 +41,7 @@ func streamStatusHandler(responseWriter http.ResponseWriter, request *http.Reque
 	statusResult := session.GetStreamStatus()
 
 	if err := json.NewEncoder(responseWriter).Encode(statusResult); err != nil {
-		helpers.LogHttpError(
+		helpers.LogHTTPError(
 			responseWriter,
 			"Internal Server Error",
 			http.StatusInternalServerError)
@@ -56,8 +56,8 @@ func sessionStatusesHandler(responseWriter http.ResponseWriter, request *http.Re
 		return
 	}
 
-	if isDisabled := os.Getenv(environment.DISABLE_STATUS); isDisabled != "" {
-		helpers.LogHttpError(
+	if isDisabled := os.Getenv(environment.DisableStatus); isDisabled != "" {
+		helpers.LogHTTPError(
 			responseWriter,
 			"Status Service Unavailable",
 			http.StatusServiceUnavailable)
@@ -66,7 +66,7 @@ func sessionStatusesHandler(responseWriter http.ResponseWriter, request *http.Re
 	}
 
 	if err := json.NewEncoder(responseWriter).Encode(manager.SessionsManager.GetSessionStates(false)); err != nil {
-		helpers.LogHttpError(
+		helpers.LogHTTPError(
 			responseWriter,
 			"Internal Server Error",
 			http.StatusInternalServerError)

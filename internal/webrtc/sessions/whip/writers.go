@@ -17,7 +17,7 @@ import (
 	pionCodecs "github.com/pion/rtp/codecs"
 )
 
-func (whip *WhipSession) AudioWriter(remoteTrack *webrtc.TrackRemote, streamKey string, peerConnection *webrtc.PeerConnection) {
+func (whip *WHIPSession) AudioWriter(remoteTrack *webrtc.TrackRemote, streamKey string, peerConnection *webrtc.PeerConnection) {
 	id := remoteTrack.RID()
 
 	if id == "" {
@@ -39,10 +39,10 @@ func (whip *WhipSession) AudioWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 		rtpRead, _, err := remoteTrack.Read(rtpBuf)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
-				log.Println("WhipSession.AudioWriter.RtpPkt.EndOfStream")
+				log.Println("WHIPSession.AudioWriter.RtpPkt.EndOfStream")
 				return
 			} else {
-				log.Println("WhipSession.AudioWriter.RtpPkt.Err", err)
+				log.Println("WHIPSession.AudioWriter.RtpPkt.Err", err)
 			}
 		}
 
@@ -50,13 +50,13 @@ func (whip *WhipSession) AudioWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 
 		err = rtpPkt.Unmarshal(rtpBuf[:rtpRead])
 		if err != nil {
-			log.Println("WhipSession.AudioWriter.RtpPkt.Error", err)
+			log.Println("WHIPSession.AudioWriter.RtpPkt.Error", err)
 			continue
 		}
 
-		var sessions map[string]*whep.WhepSession
-		if sessionsAny := whip.WhepSessionsSnapshot.Load(); sessionsAny != nil {
-			sessions = sessionsAny.(map[string]*whep.WhepSession)
+		var sessions map[string]*whep.WHEPSession
+		if sessionsAny := whip.WHEPSessionsSnapshot.Load(); sessionsAny != nil {
+			sessions = sessionsAny.(map[string]*whep.WHEPSession)
 		}
 
 		packet := codecs.TrackPacket{
@@ -73,7 +73,7 @@ func (whip *WhipSession) AudioWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 	}
 }
 
-func (whip *WhipSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey string, peerConnection *webrtc.PeerConnection) {
+func (whip *WHIPSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey string, peerConnection *webrtc.PeerConnection) {
 	id := remoteTrack.RID()
 
 	if id == "" {
@@ -83,7 +83,7 @@ func (whip *WhipSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 	codec := codecs.GetVideoTrackCodec(remoteTrack.Codec().MimeType)
 	track, err := whip.AddVideoTrack(id, streamKey, codec)
 	if err != nil {
-		log.Println("WhipSession.VideoWriter.AddTrack.Error:", err)
+		log.Println("WHIPSession.VideoWriter.AddTrack.Error:", err)
 		return
 	}
 	track.Priority = whip.getPrioritizedStreamingLayer(id, peerConnection.CurrentRemoteDescription().SDP)
@@ -104,7 +104,7 @@ func (whip *WhipSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 	}
 
 	if depacketizer == nil {
-		log.Println("WhipSession.VideoWriter.Depacketizer: No depacketizer was found for codec", codec)
+		log.Println("WHIPSession.VideoWriter.Depacketizer: No depacketizer was found for codec", codec)
 	}
 
 	lastTimestamp := uint32(0)
@@ -129,11 +129,11 @@ func (whip *WhipSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 		rtpRead, _, err := remoteTrack.Read(pktBuf)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
-				log.Println("WhipSession.VideoWriter.RtpPkt.EndOfStream")
+				log.Println("WHIPSession.VideoWriter.RtpPkt.EndOfStream")
 				whip.ActiveContextCancel()
 				return
 			} else {
-				log.Println("WhipSession.VideoWriter.RtpPkt.Err", err)
+				log.Println("WHIPSession.VideoWriter.RtpPkt.Err", err)
 			}
 		}
 
@@ -143,7 +143,7 @@ func (whip *WhipSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 
 		err = rtpPkt.Unmarshal(pktBuf[:rtpRead])
 		if err != nil {
-			log.Println("WhipSession.VideoWriter.RtpPkt.Unmarshal", err)
+			log.Println("WHIPSession.VideoWriter.RtpPkt.Unmarshal", err)
 			continue
 		}
 
@@ -183,12 +183,12 @@ func (whip *WhipSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 		lastTimestamp = rtpPkt.Timestamp
 		lastSequenceNumber = rtpPkt.SequenceNumber
 
-		var sessions map[string]*whep.WhepSession
-		if sessionsAny := whip.WhepSessionsSnapshot.Load(); sessionsAny != nil {
-			sessions = sessionsAny.(map[string]*whep.WhepSession)
+		var sessions map[string]*whep.WHEPSession
+		if sessionsAny := whip.WHEPSessionsSnapshot.Load(); sessionsAny != nil {
+			sessions = sessionsAny.(map[string]*whep.WHEPSession)
 		}
 
-		sendVideoPacketToWhep(id,
+		sendVideoPacketToWHEP(id,
 			sessions,
 			codecs.TrackPacket{
 				Layer:        id,
@@ -201,7 +201,7 @@ func (whip *WhipSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey 
 	}
 }
 
-func sendVideoPacketToWhep(id string, sessions map[string]*whep.WhepSession, packet codecs.TrackPacket) {
+func sendVideoPacketToWHEP(id string, sessions map[string]*whep.WHEPSession, packet codecs.TrackPacket) {
 	for _, whepSession := range sessions {
 		if whepSession.VideoLayerCurrent.Load() == id {
 			whepSession.SendVideoPacket(packet)
@@ -235,7 +235,7 @@ func isPacketKeyframe(pkt *rtp.Packet, codec codecs.TrackCodeType, depacketizer 
 // Helper function for getting the simulcast order and using as priority for consumers
 // This example will order from left to right with highest to lowest priority
 // a=simulcast:send High,Mid,Low
-func (whip *WhipSession) getPrioritizedStreamingLayer(layer string, sdpDescription string) int {
+func (whip *WHIPSession) getPrioritizedStreamingLayer(layer string, sdpDescription string) int {
 	var sessionDescription sdp.SessionDescription
 	err := sessionDescription.Unmarshal([]byte(sdpDescription))
 	if err != nil {
@@ -248,10 +248,10 @@ func (whip *WhipSession) getPrioritizedStreamingLayer(layer string, sdpDescripti
 		for _, attribute := range description.Attributes {
 			if attribute.Key == "simulcast" && strings.HasPrefix(attribute.Value, "send ") {
 				layers := strings.TrimPrefix(attribute.Value, "send")
-				log.Println("WhipSession.VideoWriter.TrackPriority:", layers)
+				log.Println("WHIPSession.VideoWriter.TrackPriority:", layers)
 				for simulcastLayer := range strings.SplitSeq(strings.TrimSpace(layers), ";") {
 					if simulcastLayer != "" && strings.EqualFold(simulcastLayer, layer) {
-						log.Println("WhipSession.VideoWriter.TrackPriority:", layer)
+						log.Println("WHIPSession.VideoWriter.TrackPriority:", layer)
 						return priority
 					} else {
 						priority++

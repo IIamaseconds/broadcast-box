@@ -16,7 +16,7 @@ import (
 	"github.com/glimesh/broadcast-box/internal/ip"
 )
 
-func GetSettingEngine(isWhip bool, tcpMuxCache map[string]ice.TCPMux, udpMuxCache map[int]*ice.MultiUDPMuxDefault) (settingEngine webrtc.SettingEngine) {
+func GetSettingEngine(isWHIP bool, tcpMuxCache map[string]ice.TCPMux, udpMuxCache map[int]*ice.MultiUDPMuxDefault) (settingEngine webrtc.SettingEngine) {
 	var (
 		udpMuxOpts []ice.UDPMuxFromPortOption
 	)
@@ -24,21 +24,21 @@ func GetSettingEngine(isWhip bool, tcpMuxCache map[string]ice.TCPMux, udpMuxCach
 	setupNetworkTypes()
 	setupNAT(&settingEngine)
 	setupInterfaceFilter(&settingEngine, &udpMuxOpts)
-	setupUDPMux(&settingEngine, isWhip, udpMuxCache, udpMuxOpts)
+	setupUDPMux(&settingEngine, isWHIP, udpMuxCache, udpMuxOpts)
 	setupTCPMux(&settingEngine, tcpMuxCache)
 
 	settingEngine.SetDTLSEllipticCurves(elliptic.X25519, elliptic.P384, elliptic.P256)
 	settingEngine.SetNetworkTypes(setupNetworkTypes())
 	settingEngine.DisableSRTCPReplayProtection(true)
 	settingEngine.DisableSRTPReplayProtection(true)
-	settingEngine.SetIncludeLoopbackCandidate(os.Getenv(environment.INCLUDE_LOOPBACK_CANDIDATE) != "")
+	settingEngine.SetIncludeLoopbackCandidate(os.Getenv(environment.IncludeLoopbackCandidate) != "")
 
 	return
 }
 
 func setupNetworkTypes() []webrtc.NetworkType {
-	networkTypesEnv := os.Getenv(environment.NETWORK_TYPES)
-	tcpMuxForce := os.Getenv(environment.TCP_MUX_FORCE)
+	networkTypesEnv := os.Getenv(environment.NetworkTypes)
+	tcpMuxForce := os.Getenv(environment.TCPMuxForce)
 
 	networkTypes := []webrtc.NetworkType{}
 	// TCP Mux Force will enforce TCP4/6 instead of requested types
@@ -67,7 +67,7 @@ func setupNetworkTypes() []webrtc.NetworkType {
 func setupTCPMux(settingEngine *webrtc.SettingEngine, tcpMuxCache map[string]ice.TCPMux) {
 	// Use TCP Mux port if set
 	if tcpAddr := getTCPMuxAddress(); tcpAddr != nil {
-		address := os.Getenv(environment.TCP_MUX_ADDRESS)
+		address := os.Getenv(environment.TCPMuxAddress)
 		tcpMux, ok := tcpMuxCache[address]
 
 		if !ok {
@@ -84,15 +84,15 @@ func setupTCPMux(settingEngine *webrtc.SettingEngine, tcpMuxCache map[string]ice
 	}
 }
 
-func setupUDPMux(settingEngine *webrtc.SettingEngine, isWhip bool, udpMuxCache map[int]*ice.MultiUDPMuxDefault, udpMuxOpts []ice.UDPMuxFromPortOption) {
+func setupUDPMux(settingEngine *webrtc.SettingEngine, isWHIP bool, udpMuxCache map[int]*ice.MultiUDPMuxDefault, udpMuxOpts []ice.UDPMuxFromPortOption) {
 	// Use UDP Mux port if set
-	if udpMuxPort := getUDPMuxPort(isWhip); udpMuxPort != 0 {
-		setUDPMuxPort(isWhip, udpMuxPort, udpMuxCache, udpMuxOpts, settingEngine)
+	if udpMuxPort := getUDPMuxPort(isWHIP); udpMuxPort != 0 {
+		setUDPMuxPort(isWHIP, udpMuxPort, udpMuxCache, udpMuxOpts, settingEngine)
 	}
 }
 
 func setupInterfaceFilter(settingEngine *webrtc.SettingEngine, muxOpts *[]ice.UDPMuxFromPortOption) {
-	filter := os.Getenv(environment.INTERFACE_FILTER)
+	filter := os.Getenv(environment.InterfaceFilter)
 
 	if filter != "" {
 		interfaceFilter := func(i string) bool {
@@ -105,7 +105,7 @@ func setupInterfaceFilter(settingEngine *webrtc.SettingEngine, muxOpts *[]ice.UD
 }
 
 func getTCPMuxAddress() *net.TCPAddr {
-	sharedAddress := os.Getenv(environment.TCP_MUX_ADDRESS)
+	sharedAddress := os.Getenv(environment.TCPMuxAddress)
 
 	if sharedAddress != "" {
 		tcpAddr, err := net.ResolveTCPAddr("tcp", sharedAddress)
@@ -120,13 +120,13 @@ func getTCPMuxAddress() *net.TCPAddr {
 	return nil
 }
 
-func getUDPMuxPort(isWhip bool) int {
-	sharedPort := os.Getenv(environment.UDP_MUX_PORT)
-	whipPort := os.Getenv(environment.UDP_MUX_PORT_WHIP)
-	whepPort := os.Getenv(environment.UDP_MUX_PORT_WHEP)
+func getUDPMuxPort(isWHIP bool) int {
+	sharedPort := os.Getenv(environment.UDPMuxPort)
+	whipPort := os.Getenv(environment.UDPMuxPortWHIP)
+	whepPort := os.Getenv(environment.UDPMuxPortWHEP)
 
 	// Set for WHIP
-	if isWhip && whipPort != "" {
+	if isWHIP && whipPort != "" {
 		port, err := strconv.Atoi(whipPort)
 		if err != nil {
 			log.Fatal(err)
@@ -136,7 +136,7 @@ func getUDPMuxPort(isWhip bool) int {
 	}
 
 	// Set for WHEP
-	if !isWhip && whepPort != "" {
+	if !isWHIP && whepPort != "" {
 		port, err := strconv.Atoi(whepPort)
 		if err != nil {
 			log.Fatal(err)
@@ -159,8 +159,8 @@ func getUDPMuxPort(isWhip bool) int {
 	return 0
 }
 
-func setUDPMuxPort(isWhip bool, udpMuxPort int, udpMuxCache map[int]*ice.MultiUDPMuxDefault, udpMuxOpts []ice.UDPMuxFromPortOption, settingEngine *webrtc.SettingEngine) {
-	if isWhip {
+func setUDPMuxPort(isWHIP bool, udpMuxPort int, udpMuxCache map[int]*ice.MultiUDPMuxDefault, udpMuxOpts []ice.UDPMuxFromPortOption, settingEngine *webrtc.SettingEngine) {
+	if isWHIP {
 		log.Println("Setting up WHIP UDP Mux to", udpMuxPort)
 	} else {
 		log.Println("Setting up WHEP UDP Mux to", udpMuxPort)
@@ -170,14 +170,14 @@ func setUDPMuxPort(isWhip bool, udpMuxPort int, udpMuxCache map[int]*ice.MultiUD
 
 	if !ok {
 		// No Mux for current port, create new
-		newUdpMux, err := ice.NewMultiUDPMuxFromPort(udpMuxPort, udpMuxOpts...)
+		newUDPMux, err := ice.NewMultiUDPMuxFromPort(udpMuxPort, udpMuxOpts...)
 
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		udpMuxCache[udpMuxPort] = newUdpMux
-		udpMux = newUdpMux
+		udpMuxCache[udpMuxPort] = newUDPMux
+		udpMux = newUDPMux
 	}
 
 	// Set to Mux on existing port
@@ -191,15 +191,15 @@ func setupNAT(settingEngine *webrtc.SettingEngine) {
 
 	natICECandidateType := webrtc.ICECandidateTypeHost
 
-	if os.Getenv(environment.INCLUDE_PUBLIC_IP_IN_NAT_1_TO_1_IP) != "" {
-		natIps = append(natIps, ip.GetPublicIp())
+	if os.Getenv(environment.IncludePublicIPInNAT1To1IP) != "" {
+		natIps = append(natIps, ip.GetPublicIP())
 	}
 
-	if os.Getenv(environment.NAT_1_TO_1_IP) != "" {
-		natIps = append(natIps, strings.Split(os.Getenv(environment.NAT_1_TO_1_IP), "|")...)
+	if os.Getenv(environment.NAT1To1IP) != "" {
+		natIps = append(natIps, strings.Split(os.Getenv(environment.NAT1To1IP), "|")...)
 	}
 
-	if os.Getenv(environment.NAT_ICE_CANDIDATE_TYPE) == "srflx" {
+	if os.Getenv(environment.NATICECandidateType) == "srflx" {
 		natICECandidateType = webrtc.ICECandidateTypeSrflx
 	}
 

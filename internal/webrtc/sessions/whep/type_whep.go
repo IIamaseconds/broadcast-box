@@ -16,13 +16,13 @@ type (
 		cancel     func()
 	}
 
-	WhepSession struct {
-		SessionId            string
+	WHEPSession struct {
+		SessionID            string
 		IsWaitingForKeyframe atomic.Bool
 		IsSessionClosed      atomic.Bool
 
-		SseSubscribersLock  sync.RWMutex
-		SseSubscribers      map[string]sseSubscriber
+		SSESubscribersLock  sync.RWMutex
+		SSESubscribers      map[string]sseSubscriber
 		SessionClose        sync.Once
 		ActiveContext       context.Context
 		ActiveContextCancel func()

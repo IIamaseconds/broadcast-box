@@ -43,7 +43,7 @@ func LoadEnvironmentVariables() {
 }
 
 func loadConfigs() error {
-	if os.Getenv(APP_ENV) == "development" {
+	if os.Getenv(AppEnv) == "development" {
 		log.Println("Environment: Loading `" + envFileDevelopment + "`")
 		if err := godotenv.Load(envFileDevelopment); err != nil {
 			log.Printf("Environment: Could not load `%s`: %v", envFileDevelopment, err)
@@ -56,7 +56,7 @@ func loadConfigs() error {
 		log.Printf("Environment: Could not load `%s`: %v", envFileProduction, err)
 	}
 
-	if os.Getenv(FRONTEND_DISABLED) == "" {
+	if os.Getenv(FrontendDisabled) == "" {
 		if _, err := os.Stat(GetFrontendPath()); os.IsNotExist(err) {
 			return errNoBuildDirectory
 		} else if err != nil {
@@ -68,7 +68,7 @@ func loadConfigs() error {
 }
 
 func GetFrontendPath() string {
-	frontendPath := os.Getenv(FRONTEND_PATH)
+	frontendPath := os.Getenv(FrontendPath)
 	if frontendPath == "" {
 		return defaultFrontendPath
 	}
@@ -77,9 +77,9 @@ func GetFrontendPath() string {
 }
 
 func setDefaultEnvironmentVariables() {
-	if os.Getenv(STREAM_PROFILE_PATH) == "" {
+	if os.Getenv(StreamProfilePath) == "" {
 		log.Println("Environment: Setting STREAM_PROFILE_PATH: profiles")
-		err := os.Setenv(STREAM_PROFILE_PATH, "profiles")
+		err := os.Setenv(StreamProfilePath, "profiles")
 		if err != nil {
 			log.Panic("Error setting default value for STREAM_PROFILE_PATH")
 		}

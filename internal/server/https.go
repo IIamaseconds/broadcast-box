@@ -10,12 +10,12 @@ import (
 )
 
 var (
-	defaultHttpsAddress string = ":443"
+	defaultHTTPSAddress string = ":443"
 )
 
-func startHttpsServer(serverMux http.HandlerFunc) {
-	sslKey := os.Getenv(environment.SSL_KEY)
-	sslCert := os.Getenv(environment.SSL_CERT)
+func startHTTPSServer(serverMux http.HandlerFunc) {
+	sslKey := os.Getenv(environment.SSLKey)
+	sslCert := os.Getenv(environment.SSLCert)
 
 	if sslKey == "" {
 		log.Fatal("Missing SSL Key")
@@ -26,7 +26,7 @@ func startHttpsServer(serverMux http.HandlerFunc) {
 
 	server := &http.Server{
 		Handler: serverMux,
-		Addr:    getHttpsAddress(),
+		Addr:    getHTTPSAddress(),
 	}
 
 	cert, err := tls.LoadX509KeyPair(sslCert, sslKey)
@@ -39,15 +39,15 @@ func startHttpsServer(serverMux http.HandlerFunc) {
 		Certificates: []tls.Certificate{cert},
 	}
 
-	log.Println("Serving HTTPS server at", getHttpsAddress())
+	log.Println("Serving HTTPS server at", getHTTPSAddress())
 	log.Fatal(server.ListenAndServeTLS("", ""))
 }
 
-func getHttpsAddress() string {
+func getHTTPSAddress() string {
 
-	if httpsAddress := os.Getenv(environment.HTTP_ADDRESS); httpsAddress != "" {
+	if httpsAddress := os.Getenv(environment.HTTPAddress); httpsAddress != "" {
 		return httpsAddress
 	}
 
-	return defaultHttpsAddress
+	return defaultHTTPSAddress
 }

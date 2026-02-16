@@ -6,7 +6,7 @@ import (
 )
 
 // Returns all available Video and Audio layers of the provided stream key
-func (whip *WhipSession) GetAvailableLayersEvent() string {
+func (whip *WHIPSession) GetAvailableLayersEvent() string {
 	videoLayers := []simulcastLayerResponse{}
 	audioLayers := []simulcastLayerResponse{}
 
@@ -15,14 +15,14 @@ func (whip *WhipSession) GetAvailableLayersEvent() string {
 	// Add available video layers
 	for track := range whip.VideoTracks {
 		videoLayers = append(videoLayers, simulcastLayerResponse{
-			EncodingId: whip.VideoTracks[track].Rid,
+			EncodingID: whip.VideoTracks[track].Rid,
 		})
 	}
 
 	// Add available audio layers
 	for track := range whip.AudioTracks {
 		audioLayers = append(audioLayers, simulcastLayerResponse{
-			EncodingId: whip.AudioTracks[track].Rid,
+			EncodingID: whip.AudioTracks[track].Rid,
 		})
 	}
 

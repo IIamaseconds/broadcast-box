@@ -1,7 +1,7 @@
 package whep
 
 type SessionState struct {
-	Id string `json:"id"`
+	ID string `json:"id"`
 
 	AudioLayerCurrent   string `json:"audioLayerCurrent"`
 	AudioTimestamp      uint32 `json:"audioTimestamp"`

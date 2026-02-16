@@ -16,22 +16,22 @@ import (
 func GetServeMuxHandler() http.HandlerFunc {
 	serverMux := http.NewServeMux()
 
-	if os.Getenv(environment.FRONTEND_DISABLED) == "" {
+	if os.Getenv(environment.FrontendDisabled) == "" {
 		serverMux.HandleFunc("/", frontendHandler)
 	}
 
-	// Whip/Whep shared endpoints
-	serverMux.HandleFunc("/api/whep", corsHandler(WhepHandler))
-	serverMux.HandleFunc("/api/whep/", corsHandler(WhepHandler))
+	// WHIP/WHEP shared endpoints
+	serverMux.HandleFunc("/api/whep", corsHandler(WHEPHandler))
+	serverMux.HandleFunc("/api/whep/", corsHandler(WHEPHandler))
 	serverMux.HandleFunc("/api/sse/", corsHandler(sseHandler))
 	serverMux.HandleFunc("/api/ice-servers", corsHandler(clientICEHandler))
 
-	// Whip session endpoints
-	serverMux.HandleFunc("/api/whip", corsHandler(whipHandlers.WhipHandler))
-	serverMux.HandleFunc("/api/whip/", corsHandler(whipHandlers.WhipHandler))
+	// WHIP session endpoints
+	serverMux.HandleFunc("/api/whip", corsHandler(whipHandlers.WHIPHandler))
+	serverMux.HandleFunc("/api/whip/", corsHandler(whipHandlers.WHIPHandler))
 	serverMux.HandleFunc("/api/whip/profile", corsHandler(whipHandlers.ProfileHandler))
 
-	// Whep session endpoints
+	// WHEP session endpoints
 	serverMux.HandleFunc("/api/layer/", corsHandler(layerChangeHandler))
 
 	// Logging and status endpoints
@@ -48,7 +48,7 @@ func GetServeMuxHandler() http.HandlerFunc {
 	serverMux.HandleFunc("/api/admin/profiles/remove-profile", corsHandler(adminHandlers.ProfileRemoveHandler))
 
 	// Path middleware
-	debugOutputWebRequests := os.Getenv(environment.DEBUG_INCOMING_API_REQUEST)
+	debugOutputWebRequests := os.Getenv(environment.DebugIncomingAPIRequest)
 	handler := http.HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
 		if strings.EqualFold(debugOutputWebRequests, "TRUE") {
 			log.Println("Calling path", request.URL.Path)

@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-func ToJsonString(content any) (jsonString string, err error) {
+func ToJSONString(content any) (jsonString string, err error) {
 	jsonResult, err := json.Marshal(content)
 	if err != nil {
 		log.Println("Error converting response", content, "to Json")

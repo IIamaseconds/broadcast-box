@@ -2,6 +2,6 @@ package whip
 
 type (
 	simulcastLayerResponse struct {
-		EncodingId string `json:"encodingId"`
+		EncodingID string `json:"encodingId"`
 	}
 )

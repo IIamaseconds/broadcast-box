@@ -11,13 +11,13 @@ import (
 
 func GetPeerConnectionConfig() webrtc.Configuration {
 	config := webrtc.Configuration{}
-	if stunServers := os.Getenv(environment.STUN_SERVERS_INTERNAL); stunServers != "" {
+	if stunServers := os.Getenv(environment.STUNServersInternal); stunServers != "" {
 		for stunServer := range strings.SplitSeq(stunServers, "|") {
 			config.ICEServers = append(config.ICEServers, webrtc.ICEServer{
 				URLs: []string{"stun:" + stunServer},
 			})
 		}
-	} else if stunServers := os.Getenv(environment.STUN_SERVERS); stunServers != "" {
+	} else if stunServers := os.Getenv(environment.STUNServers); stunServers != "" {
 		for stunServer := range strings.SplitSeq(stunServers, "|") {
 			config.ICEServers = append(config.ICEServers, webrtc.ICEServer{
 				URLs: []string{"stun:" + stunServer},
@@ -27,7 +27,7 @@ func GetPeerConnectionConfig() webrtc.Configuration {
 
 	username, credential := authorization.GetTURNCredentials()
 
-	if turnServers := os.Getenv(environment.TURN_SERVERS_INTERNAL); turnServers != "" {
+	if turnServers := os.Getenv(environment.TURNServersInternal); turnServers != "" {
 		for turnServer := range strings.SplitSeq(turnServers, "|") {
 			config.ICEServers = append(config.ICEServers, webrtc.ICEServer{
 				URLs:       []string{"turn:" + turnServer},
@@ -35,7 +35,7 @@ func GetPeerConnectionConfig() webrtc.Configuration {
 				Credential: credential,
 			})
 		}
-	} else if turnServers := os.Getenv(environment.TURN_SERVERS); turnServers != "" {
+	} else if turnServers := os.Getenv(environment.TURNServers); turnServers != "" {
 		for turnServer := range strings.SplitSeq(turnServers, "|") {
 			config.ICEServers = append(config.ICEServers, webrtc.ICEServer{
 				URLs:       []string{"turn:" + turnServer},

@@ -10,25 +10,25 @@ import (
 )
 
 // Create and start a new WHEP session
-func CreateNewWhep(
-	whepSessionId string,
+func CreateNewWHEP(
+	whepSessionID string,
 	audioTrack *codecs.TrackMultiCodec,
 	audioLayer string,
 	videoTrack *codecs.TrackMultiCodec,
 	videoLayer string,
 	peerConnection *webrtc.PeerConnection,
 	pliSender func(),
-) (whepSession *WhepSession) {
-	log.Println("WhepSession.CreateNewWhep", whepSessionId)
+) (whepSession *WHEPSession) {
+	log.Println("WHEPSession.CreateNewWHEP", whepSessionID)
 
 	activeContext, activeContextCancel := context.WithCancel(context.Background())
-	whepSession = &WhepSession{
-		SessionId:               whepSessionId,
+	whepSession = &WHEPSession{
+		SessionID:               whepSessionID,
 		AudioTrack:              audioTrack,
 		VideoTrack:              videoTrack,
 		AudioTimestamp:          5000,
 		VideoTimestamp:          5000,
-		SseSubscribers:          make(map[string]sseSubscriber),
+		SSESubscribers:          make(map[string]sseSubscriber),
 		PeerConnection:          peerConnection,
 		ActiveContext:           activeContext,
 		ActiveContextCancel:     activeContextCancel,
@@ -36,8 +36,8 @@ func CreateNewWhep(
 		videoBitrateWindowStart: time.Now(),
 	}
 
-	log.Println("WhepSession.CreateNewWhep.AudioLayer", audioLayer)
-	log.Println("WhepSession.CreateNewWhep.VideoLayer", videoLayer)
+	log.Println("WHEPSession.CreateNewWHEP.AudioLayer", audioLayer)
+	log.Println("WHEPSession.CreateNewWHEP.VideoLayer", videoLayer)
 	whepSession.AudioLayerCurrent.Store(audioLayer)
 	whepSession.VideoLayerCurrent.Store(videoLayer)
 	whepSession.IsWaitingForKeyframe.Store(true)
@@ -46,19 +46,19 @@ func CreateNewWhep(
 }
 
 // Closes down the WHEP session completely
-func (whepSession *WhepSession) Close() {
+func (whepSession *WHEPSession) Close() {
 	// Close WHEP channels
 	whepSession.SessionClose.Do(func() {
-		log.Println("WhepSession.Close")
+		log.Println("WHEPSession.Close")
 		whepSession.IsSessionClosed.Store(true)
 
 		// Close PeerConnection
-		log.Println("WhepSession.Close.PeerConnection.GracefulClose")
+		log.Println("WHEPSession.Close.PeerConnection.GracefulClose")
 		err := whepSession.PeerConnection.Close()
 		if err != nil {
-			log.Println("WhepSession.Close.PeerConnection.Error", err)
+			log.Println("WHEPSession.Close.PeerConnection.Error", err)
 		}
-		log.Println("WhepSession.Close.PeerConnection.GracefulClose.Completed")
+		log.Println("WHEPSession.Close.PeerConnection.GracefulClose.Completed")
 
 		// Empty tracks
 		whepSession.AudioLock.Lock()
@@ -70,16 +70,16 @@ func (whepSession *WhepSession) Close() {
 		whepSession.VideoLock.Unlock()
 		whepSession.AudioLock.Unlock()
 
-		whepSession.SseSubscribersLock.Lock()
-		whepSession.SseSubscribers = make(map[string]sseSubscriber)
-		whepSession.SseSubscribersLock.Unlock()
+		whepSession.SSESubscribersLock.Lock()
+		whepSession.SSESubscribers = make(map[string]sseSubscriber)
+		whepSession.SSESubscribersLock.Unlock()
 
 		whepSession.ActiveContextCancel()
 	})
 }
 
 // Get the current status of the WHEP session
-func (whepSession *WhepSession) GetWhepSessionStatus() (state SessionState) {
+func (whepSession *WHEPSession) GetWHEPSessionStatus() (state SessionState) {
 	whepSession.AudioLock.RLock()
 	whepSession.VideoLock.Lock()
 	whepSession.updateVideoBitrateLocked(time.Now())
@@ -88,7 +88,7 @@ func (whepSession *WhepSession) GetWhepSessionStatus() (state SessionState) {
 	currentVideoLayer := whepSession.VideoLayerCurrent.Load().(string)
 
 	state = SessionState{
-		Id: whepSession.SessionId,
+		ID: whepSession.SessionID,
 
 		AudioLayerCurrent:   currentAudioLayer,
 		AudioTimestamp:      whepSession.AudioTimestamp,
@@ -109,23 +109,23 @@ func (whepSession *WhepSession) GetWhepSessionStatus() (state SessionState) {
 	return
 }
 
-// Finds the corresponding Whip session to the Whep session id and sets the requested audio layer
-func (whepSession *WhepSession) SetAudioLayer(encodingId string) {
+// Finds the corresponding WHIP session to the WHEP session id and sets the requested audio layer
+func (whepSession *WHEPSession) SetAudioLayer(encodingID string) {
 	log.Println("Setting Audio Layer")
-	whepSession.AudioLayerCurrent.Store(encodingId)
+	whepSession.AudioLayerCurrent.Store(encodingID)
 	whepSession.IsWaitingForKeyframe.Store(true)
 	whepSession.SendPLI()
 }
 
-// Finds the corresponding Whip session to the Whep session id and sets the requested video layer
-func (whepSession *WhepSession) SetVideoLayer(encodingId string) {
+// Finds the corresponding WHIP session to the WHEP session id and sets the requested video layer
+func (whepSession *WHEPSession) SetVideoLayer(encodingID string) {
 	log.Println("Setting Video Layer")
-	whepSession.VideoLayerCurrent.Store(encodingId)
+	whepSession.VideoLayerCurrent.Store(encodingID)
 	whepSession.IsWaitingForKeyframe.Store(true)
 	whepSession.SendPLI()
 }
 
-func (whepSession *WhepSession) SendPLI() {
+func (whepSession *WHEPSession) SendPLI() {
 	if whepSession.IsSessionClosed.Load() {
 		return
 	}
@@ -135,38 +135,38 @@ func (whepSession *WhepSession) SendPLI() {
 	}
 }
 
-func (whepSession *WhepSession) AddSSESubscriber(subscriberID string, writeEvent func(string) bool, cancel func()) bool {
-	whepSession.SseSubscribersLock.Lock()
-	defer whepSession.SseSubscribersLock.Unlock()
+func (whepSession *WHEPSession) AddSSESubscriber(subscriberID string, writeEvent func(string) bool, cancel func()) bool {
+	whepSession.SSESubscribersLock.Lock()
+	defer whepSession.SSESubscribersLock.Unlock()
 
 	if whepSession.IsSessionClosed.Load() || writeEvent == nil || cancel == nil {
 		return false
 	}
 
-	whepSession.SseSubscribers[subscriberID] = sseSubscriber{
+	whepSession.SSESubscribers[subscriberID] = sseSubscriber{
 		writeEvent: writeEvent,
 		cancel:     cancel,
 	}
 	return true
 }
 
-func (whepSession *WhepSession) RemoveSSESubscriber(subscriberID string) {
-	whepSession.SseSubscribersLock.Lock()
-	delete(whepSession.SseSubscribers, subscriberID)
-	whepSession.SseSubscribersLock.Unlock()
+func (whepSession *WHEPSession) RemoveSSESubscriber(subscriberID string) {
+	whepSession.SSESubscribersLock.Lock()
+	delete(whepSession.SSESubscribers, subscriberID)
+	whepSession.SSESubscribersLock.Unlock()
 }
 
-func (whepSession *WhepSession) BroadcastSSE(message string) {
+func (whepSession *WHEPSession) BroadcastSSE(message string) {
 	if message == "" || whepSession.IsSessionClosed.Load() {
 		return
 	}
 
-	whepSession.SseSubscribersLock.RLock()
-	subscribers := make(map[string]sseSubscriber, len(whepSession.SseSubscribers))
-	for id, subscriber := range whepSession.SseSubscribers {
+	whepSession.SSESubscribersLock.RLock()
+	subscribers := make(map[string]sseSubscriber, len(whepSession.SSESubscribers))
+	for id, subscriber := range whepSession.SSESubscribers {
 		subscribers[id] = subscriber
 	}
-	whepSession.SseSubscribersLock.RUnlock()
+	whepSession.SSESubscribersLock.RUnlock()
 
 	for id, subscriber := range subscribers {
 		if !subscriber.writeEvent(message) {
@@ -176,7 +176,7 @@ func (whepSession *WhepSession) BroadcastSSE(message string) {
 	}
 }
 
-func (whepSession *WhepSession) updateVideoBitrateLocked(now time.Time) {
+func (whepSession *WHEPSession) updateVideoBitrateLocked(now time.Time) {
 	if whepSession.videoBitrateWindowStart.IsZero() {
 		whepSession.videoBitrateWindowStart = now
 		return

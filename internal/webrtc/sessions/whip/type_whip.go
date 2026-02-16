@@ -10,8 +10,8 @@ import (
 )
 
 type (
-	WhipSession struct {
-		Id                  string
+	WHIPSession struct {
+		ID                  string
 		ActiveContext       context.Context
 		ActiveContextCancel func()
 		PeerConnectionLock  sync.RWMutex
@@ -22,8 +22,8 @@ type (
 		VideoTracks map[string]*VideoTrack
 		AudioTracks map[string]*AudioTrack
 
-		// TODO: WhepSessionsSnapshot should contain serializable state, not runtime references.
-		WhepSessionsSnapshot atomic.Value
+		// TODO: WHEPSessionsSnapshot should contain serializable state, not runtime references.
+		WHEPSessionsSnapshot atomic.Value
 	}
 
 	VideoTrack struct {

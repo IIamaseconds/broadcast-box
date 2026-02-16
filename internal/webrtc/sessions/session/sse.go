@@ -9,7 +9,7 @@ import (
 // Get SSE String with status about the current session
 func (session *Session) GetSessionStatsEvent() string {
 
-	status, err := utils.ToJsonString(session.GetStreamStatus())
+	status, err := utils.ToJSONString(session.GetStreamStatus())
 	if err != nil {
 		log.Println("GetSessionStatsJsonString Error:", err)
 		return ""

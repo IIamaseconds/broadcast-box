@@ -9,8 +9,8 @@ import (
 	"github.com/glimesh/broadcast-box/internal/webrtc/codecs"
 )
 
-// Sends provided audio packet to the Whep session
-func (whepSession *WhepSession) SendAudioPacket(packet codecs.TrackPacket) {
+// Sends provided audio packet to the WHEP session
+func (whepSession *WHEPSession) SendAudioPacket(packet codecs.TrackPacket) {
 	if whepSession.IsSessionClosed.Load() {
 		return
 	}
@@ -28,16 +28,16 @@ func (whepSession *WhepSession) SendAudioPacket(packet codecs.TrackPacket) {
 
 	if err := audioTrack.WriteRTP(packet.Packet, packet.Codec); err != nil {
 		if errors.Is(err, io.ErrClosedPipe) {
-			log.Println("WhepSession.SendAudioPacket.ConnectionDropped")
+			log.Println("WHEPSession.SendAudioPacket.ConnectionDropped")
 			whepSession.Close()
 		} else {
-			log.Println("WhepSession.SendAudioPacket.Error", err)
+			log.Println("WHEPSession.SendAudioPacket.Error", err)
 		}
 	}
 }
 
-// Sends provided video packet to the Whep session
-func (whepSession *WhepSession) SendVideoPacket(packet codecs.TrackPacket) {
+// Sends provided video packet to the WHEP session
+func (whepSession *WHEPSession) SendVideoPacket(packet codecs.TrackPacket) {
 	if whepSession.IsSessionClosed.Load() {
 		return
 	}
@@ -73,10 +73,10 @@ func (whepSession *WhepSession) SendVideoPacket(packet codecs.TrackPacket) {
 		whepSession.VideoPacketsDropped.Add(1)
 
 		if errors.Is(err, io.ErrClosedPipe) {
-			log.Println("WhepSession.SendVideoPacket.ConnectionDropped")
+			log.Println("WHEPSession.SendVideoPacket.ConnectionDropped")
 			whepSession.Close()
 		} else {
-			log.Println("WhepSession.SendVideoPacket.Error", err)
+			log.Println("WHEPSession.SendVideoPacket.Error", err)
 		}
 	}
 }

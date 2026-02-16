@@ -29,9 +29,9 @@ func verifyAdminSession(request *http.Request) *SessionResponse {
 		}
 	}
 
-	adminApiToken := os.Getenv(environment.FRONTEND_ADMIN_TOKEN)
+	adminAPIToken := os.Getenv(environment.FrontendAdminToken)
 
-	if adminApiToken == "" || !strings.EqualFold(adminApiToken, token) {
+	if adminAPIToken == "" || !strings.EqualFold(adminAPIToken, token) {
 		return &SessionResponse{
 			IsValid:      false,
 			ErrorMessage: "Authorization was invalid",
@@ -48,7 +48,7 @@ func verifyAdminSession(request *http.Request) *SessionResponse {
 // This will write a default METHOD NOT ALLOWED response on the responsewriter
 func verifyValidMethod(expectedMethod string, responseWriter http.ResponseWriter, request *http.Request) bool {
 	if !strings.EqualFold(expectedMethod, request.Method) {
-		helpers.LogHttpError(responseWriter, "Method not allowed", http.StatusMethodNotAllowed)
+		helpers.LogHTTPError(responseWriter, "Method not allowed", http.StatusMethodNotAllowed)
 		err := json.NewEncoder(responseWriter).Encode(&SessionResponse{
 			IsValid:      false,
 			ErrorMessage: "Method not allowed",

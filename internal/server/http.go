@@ -10,33 +10,33 @@ import (
 )
 
 var (
-	defaultHttpAddress         string = ":8080"
-	defaultHttpRedirectAddress string = ":80"
+	defaultHTTPAddress         string = ":8080"
+	defaultHTTPRedirectAddress string = ":80"
 )
 
-func startHttpServer(serverMux http.HandlerFunc) {
+func startHTTPServer(serverMux http.HandlerFunc) {
 	server := &http.Server{
 		Handler: serverMux,
-		Addr:    getHttpAddress(),
+		Addr:    getHTTPAddress(),
 	}
 
-	log.Println("Starting HTTP server at", getHttpAddress())
+	log.Println("Starting HTTP server at", getHTTPAddress())
 	log.Fatal(server.ListenAndServe())
 }
 
-func getHttpAddress() string {
-	if httpAddress := os.Getenv(environment.HTTP_ADDRESS); httpAddress != "" {
+func getHTTPAddress() string {
+	if httpAddress := os.Getenv(environment.HTTPAddress); httpAddress != "" {
 		return httpAddress
 	}
 
-	return defaultHttpAddress
+	return defaultHTTPAddress
 }
 
-func setupHttpRedirect() {
-	if shouldRedirectToHttps := os.Getenv(environment.HTTP_ENABLE_REDIRECT); shouldRedirectToHttps != "" {
-		httpRedirectPort := defaultHttpRedirectAddress
+func setupHTTPRedirect() {
+	if shouldRedirectToHTTPS := os.Getenv(environment.HTTPEnableRedirect); shouldRedirectToHTTPS != "" {
+		httpRedirectPort := defaultHTTPRedirectAddress
 
-		if httpRedirectPortEnvVar := os.Getenv(environment.HTTPS_REDIRECT_PORT); httpRedirectPortEnvVar != "" {
+		if httpRedirectPortEnvVar := os.Getenv(environment.HTTPSRedirectPort); httpRedirectPortEnvVar != "" {
 			httpRedirectPort = httpRedirectPortEnvVar
 		}
 

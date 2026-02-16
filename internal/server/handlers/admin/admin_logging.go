@@ -16,7 +16,7 @@ func LoggingHandler(responseWriter http.ResponseWriter, request *http.Request) {
 
 	sessionResult := verifyAdminSession(request)
 	if !sessionResult.IsValid {
-		helpers.LogHttpError(responseWriter, sessionResult.ErrorMessage, http.StatusUnauthorized)
+		helpers.LogHTTPError(responseWriter, sessionResult.ErrorMessage, http.StatusUnauthorized)
 		return
 	}
 
@@ -29,7 +29,7 @@ func LoggingHandler(responseWriter http.ResponseWriter, request *http.Request) {
 
 	if _, err := io.Copy(responseWriter, file); err != nil {
 		log.Println("API.Admin.Logging: Error writing file to response", err)
-		helpers.LogHttpError(responseWriter, "Invalid request", http.StatusBadRequest)
+		helpers.LogHTTPError(responseWriter, "Invalid request", http.StatusBadRequest)
 	}
 
 	err = file.Close()

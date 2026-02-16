@@ -9,13 +9,13 @@ import (
 
 // HTTP Setup
 func StartWebServer() {
-	setupHttpRedirect()
+	setupHTTPRedirect()
 
 	serverMux := handlers.GetServeMuxHandler()
 
-	if os.Getenv(environment.SSL_KEY) != "" && os.Getenv(environment.SSL_CERT) != "" {
-		startHttpsServer(serverMux)
+	if os.Getenv(environment.SSLKey) != "" && os.Getenv(environment.SSLCert) != "" {
+		startHTTPSServer(serverMux)
 	} else {
-		startHttpServer(serverMux)
+		startHTTPServer(serverMux)
 	}
 }

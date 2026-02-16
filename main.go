@@ -22,7 +22,7 @@ func main() {
 	environment.LoadEnvironmentVariables()
 	console.HandleConsoleFlags()
 
-	if shouldProfileApplication := os.Getenv(environment.ENABLE_PROFILING); strings.EqualFold(shouldProfileApplication, "true") {
+	if shouldProfileApplication := os.Getenv(environment.EnableProfiling); strings.EqualFold(shouldProfileApplication, "true") {
 		go func() {
 			runtime.SetBlockProfileRate(1)
 			runtime.SetMutexProfileFraction(1)
@@ -33,7 +33,7 @@ func main() {
 	log.Println("Booting up Broadcast", time.Now().Format("2006-01-02 15:04:05"))
 	webrtc.Setup()
 
-	if shouldNetworkTest := os.Getenv(environment.NETWORK_TEST_ON_START); strings.EqualFold(shouldNetworkTest, "true") {
+	if shouldNetworkTest := os.Getenv(environment.NetworkTestOnStart); strings.EqualFold(shouldNetworkTest, "true") {
 		networktest.RunNetworkTest()
 	}
 

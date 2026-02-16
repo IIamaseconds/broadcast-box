@@ -12,7 +12,7 @@ import (
 )
 
 func GetTURNCredentials() (username string, credentials string) {
-	turnAuthKey := os.Getenv(environment.TURN_SERVER_AUTH_SECRET)
+	turnAuthKey := os.Getenv(environment.TURNServerAuthSecret)
 
 	if turnAuthKey == "" {
 		return "BroadcastBox", "BroadcastBox"

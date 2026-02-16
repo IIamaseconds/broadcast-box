@@ -17,7 +17,7 @@ func ProfilesHandler(responseWriter http.ResponseWriter, request *http.Request) 
 
 	sessionResult := verifyAdminSession(request)
 	if !sessionResult.IsValid {
-		helpers.LogHttpError(responseWriter, sessionResult.ErrorMessage, http.StatusUnauthorized)
+		helpers.LogHTTPError(responseWriter, sessionResult.ErrorMessage, http.StatusUnauthorized)
 		return
 	}
 
@@ -46,19 +46,19 @@ func ProfilesResetTokenHandler(responseWriter http.ResponseWriter, request *http
 
 	sessionResult := verifyAdminSession(request)
 	if !sessionResult.IsValid {
-		helpers.LogHttpError(responseWriter, sessionResult.ErrorMessage, http.StatusUnauthorized)
+		helpers.LogHTTPError(responseWriter, sessionResult.ErrorMessage, http.StatusUnauthorized)
 		return
 	}
 
 	var payload adminTokenResetPayload
 	if err := json.NewDecoder(request.Body).Decode(&payload); err != nil {
-		helpers.LogHttpError(responseWriter, "Error resolving request", http.StatusBadRequest)
+		helpers.LogHTTPError(responseWriter, "Error resolving request", http.StatusBadRequest)
 		return
 	}
 
 	if err := authorization.ResetProfileToken(payload.StreamKey); err != nil {
 		log.Println("API.Admin.ProfilesResetTokenHandler", err)
-		helpers.LogHttpError(responseWriter, "Error updating token", http.StatusBadRequest)
+		helpers.LogHTTPError(responseWriter, "Error updating token", http.StatusBadRequest)
 		return
 	}
 
@@ -77,19 +77,19 @@ func ProfileAddHandler(responseWriter http.ResponseWriter, request *http.Request
 
 	sessionResult := verifyAdminSession(request)
 	if !sessionResult.IsValid {
-		helpers.LogHttpError(responseWriter, sessionResult.ErrorMessage, http.StatusUnauthorized)
+		helpers.LogHTTPError(responseWriter, sessionResult.ErrorMessage, http.StatusUnauthorized)
 		return
 	}
 
 	var payload adminAddStreamPayload
 	if err := json.NewDecoder(request.Body).Decode(&payload); err != nil {
-		helpers.LogHttpError(responseWriter, "Error resolving request", http.StatusBadRequest)
+		helpers.LogHTTPError(responseWriter, "Error resolving request", http.StatusBadRequest)
 		return
 	}
 
 	if _, err := authorization.CreateProfile(payload.StreamKey); err != nil {
 		log.Println("API.Admin.CreateProfile", err)
-		helpers.LogHttpError(responseWriter, err.Error(), http.StatusBadRequest)
+		helpers.LogHTTPError(responseWriter, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -108,19 +108,19 @@ func ProfileRemoveHandler(responseWriter http.ResponseWriter, request *http.Requ
 
 	sessionResult := verifyAdminSession(request)
 	if !sessionResult.IsValid {
-		helpers.LogHttpError(responseWriter, sessionResult.ErrorMessage, http.StatusUnauthorized)
+		helpers.LogHTTPError(responseWriter, sessionResult.ErrorMessage, http.StatusUnauthorized)
 		return
 	}
 
 	var payload adminRemoveStreamPayload
 	if err := json.NewDecoder(request.Body).Decode(&payload); err != nil {
-		helpers.LogHttpError(responseWriter, "Error resolving request", http.StatusBadRequest)
+		helpers.LogHTTPError(responseWriter, "Error resolving request", http.StatusBadRequest)
 		return
 	}
 
 	if _, err := authorization.RemoveProfile(payload.StreamKey); err != nil {
 		log.Println("API.Admin.RemoveProfile", err)
-		helpers.LogHttpError(responseWriter, err.Error(), http.StatusBadRequest)
+		helpers.LogHTTPError(responseWriter, err.Error(), http.StatusBadRequest)
 		return
 	}
 

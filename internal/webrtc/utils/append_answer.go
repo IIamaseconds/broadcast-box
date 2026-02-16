@@ -9,7 +9,7 @@ import (
 
 // Appends a candidate to the list of candidates that are sent back to the client in the answer
 func AppendCandidateToAnswer(localDescriptionSFP string) string {
-	if appendCandidate := os.Getenv(environment.APPEND_CANDIDATE); appendCandidate != "" {
+	if appendCandidate := os.Getenv(environment.AppendCandidate); appendCandidate != "" {
 		index := strings.Index(localDescriptionSFP, "a=end-of-candidates")
 		localDescriptionSFP = localDescriptionSFP[:index] + appendCandidate + localDescriptionSFP[index:]
 	}

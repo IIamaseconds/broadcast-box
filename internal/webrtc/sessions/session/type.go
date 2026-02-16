@@ -21,13 +21,13 @@ type Session struct {
 	IsPublic    bool
 	StreamStart time.Time
 
-	Host atomic.Pointer[whip.WhipSession]
+	Host atomic.Pointer[whip.WHIPSession]
 
 	// Context
 	ActiveContext       context.Context
 	ActiveContextCancel func()
 
-	// Protects WhepSessions
-	WhepSessionsLock sync.RWMutex
-	WhepSessions     map[string]*whep.WhepSession
+	// Protects WHEPSessions
+	WHEPSessionsLock sync.RWMutex
+	WHEPSessions     map[string]*whep.WHEPSession
 }

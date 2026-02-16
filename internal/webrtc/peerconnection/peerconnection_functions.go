@@ -7,14 +7,14 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
-func CreateWhepPeerConnection() (*webrtc.PeerConnection, error) {
-	return manager.ApiWhep.NewPeerConnection(GetPeerConnectionConfig())
+func CreateWHEPPeerConnection() (*webrtc.PeerConnection, error) {
+	return manager.APIWHEP.NewPeerConnection(GetPeerConnectionConfig())
 }
 
-func CreateWhipPeerConnection(offer string) (*webrtc.PeerConnection, error) {
-	log.Println("CreateWhipPeerConnection.CreateWhipPeerConnection")
+func CreateWHIPPeerConnection(offer string) (*webrtc.PeerConnection, error) {
+	log.Println("CreateWHIPPeerConnection.CreateWHIPPeerConnection")
 
-	peerConnection, err := manager.ApiWhip.NewPeerConnection(GetPeerConnectionConfig())
+	peerConnection, err := manager.APIWHIP.NewPeerConnection(GetPeerConnectionConfig())
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func CreateWhipPeerConnection(offer string) (*webrtc.PeerConnection, error) {
 
 	// Await gathering trickle
 	<-gatheringCompleteResult
-	log.Println("PeerConnection.CreateWhipPeerConnection.GatheringCompleteResult")
+	log.Println("PeerConnection.CreateWHIPPeerConnection.GatheringCompleteResult")
 
 	return peerConnection, nil
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func DebugOutputOffer(offer string) string {
-	if strings.EqualFold(os.Getenv(environment.DEBUG_PRINT_OFFER), "true") {
+	if strings.EqualFold(os.Getenv(environment.DebugPrintOffer), "true") {
 		log.Println(offer)
 	}
 
@@ -17,7 +17,7 @@ func DebugOutputOffer(offer string) string {
 }
 
 func DebugOutputAnswer(answer string) string {
-	if strings.EqualFold(os.Getenv(environment.DEBUG_PRINT_ANSWER), "true") {
+	if strings.EqualFold(os.Getenv(environment.DebugPrintAnswer), "true") {
 		log.Println(answer)
 	}
 

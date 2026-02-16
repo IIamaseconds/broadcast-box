@@ -9,9 +9,9 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
-// Add a new AudioTrack to the Whip session
-func (whip *WhipSession) AddAudioTrack(rid string, streamKey string, codec codecs.TrackCodeType) (*AudioTrack, error) {
-	log.Println("WhipSession.AddAudioTrack:", streamKey, "(", rid, ")")
+// Add a new AudioTrack to the WHIP session
+func (whip *WHIPSession) AddAudioTrack(rid string, streamKey string, codec codecs.TrackCodeType) (*AudioTrack, error) {
+	log.Println("WHIPSession.AddAudioTrack:", streamKey, "(", rid, ")")
 	whip.TracksLock.Lock()
 	defer whip.TracksLock.Unlock()
 
@@ -35,9 +35,9 @@ func (whip *WhipSession) AddAudioTrack(rid string, streamKey string, codec codec
 	return track, nil
 }
 
-// Add a new VideoTrack to the Whip session
-func (whip *WhipSession) AddVideoTrack(rid string, streamKey string, codec codecs.TrackCodeType) (*VideoTrack, error) {
-	log.Println("WhipSession.AddVideoTrack:", "(", rid, ")")
+// Add a new VideoTrack to the WHIP session
+func (whip *WHIPSession) AddVideoTrack(rid string, streamKey string, codec codecs.TrackCodeType) (*VideoTrack, error) {
+	log.Println("WHIPSession.AddVideoTrack:", "(", rid, ")")
 	whip.TracksLock.Lock()
 	defer whip.TracksLock.Unlock()
 
@@ -62,8 +62,8 @@ func (whip *WhipSession) AddVideoTrack(rid string, streamKey string, codec codec
 }
 
 // Remove Audio and Video tracks coming from the whip session id
-func (whip *WhipSession) RemoveTracks() {
-	log.Println("WhipSession.RemoveTracks")
+func (whip *WHIPSession) RemoveTracks() {
+	log.Println("WHIPSession.RemoveTracks")
 
 	whip.TracksLock.Lock()
 	whip.AudioTracks = make(map[string]*AudioTrack)
@@ -75,9 +75,9 @@ func (whip *WhipSession) RemoveTracks() {
 // This only works if the priority has been set.
 // Currently this is only supported when being set through the simulcast
 // property in the offer made by the whip connection
-func (whip *WhipSession) GetHighestPrioritizedAudioTrack() string {
+func (whip *WHIPSession) GetHighestPrioritizedAudioTrack() string {
 	if len(whip.AudioTracks) == 0 {
-		log.Println("No Audio tracks was found for", whip.Id)
+		log.Println("No Audio tracks was found for", whip.ID)
 		return ""
 	}
 
@@ -107,9 +107,9 @@ func (whip *WhipSession) GetHighestPrioritizedAudioTrack() string {
 // This only works if the priority has been set.
 // Currently this is only supported when being set through the simulcast
 // property in the offer made by the whip connection
-func (whip *WhipSession) GetHighestPrioritizedVideoTrack() string {
+func (whip *WHIPSession) GetHighestPrioritizedVideoTrack() string {
 	if len(whip.VideoTracks) == 0 {
-		log.Println("No Video tracks was found for", whip.Id)
+		log.Println("No Video tracks was found for", whip.ID)
 	}
 
 	var highestPriorityVideoTrack *VideoTrack

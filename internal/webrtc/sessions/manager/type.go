@@ -10,8 +10,8 @@ import (
 var (
 	SessionsManager *SessionManager
 
-	ApiWhip *webrtc.API
-	ApiWhep *webrtc.API
+	APIWHIP *webrtc.API
+	APIWHEP *webrtc.API
 )
 
 type SessionManager struct {

@@ -7,8 +7,8 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
-func (whip *WhipSession) AddPeerConnection(peerConnection *webrtc.PeerConnection, streamKey string) {
-	log.Println("WhipSession.AddPeerConnection")
+func (whip *WHIPSession) AddPeerConnection(peerConnection *webrtc.PeerConnection, streamKey string) {
+	log.Println("WHIPSession.AddPeerConnection")
 
 	whip.PeerConnectionLock.Lock()
 	existingPeerConnection := whip.PeerConnection
@@ -16,17 +16,17 @@ func (whip *WhipSession) AddPeerConnection(peerConnection *webrtc.PeerConnection
 	whip.PeerConnectionLock.Unlock()
 
 	if existingPeerConnection != nil && existingPeerConnection != peerConnection {
-		log.Println("WhipSession.AddPeerConnection: Replacing existing peerconnection")
+		log.Println("WHIPSession.AddPeerConnection: Replacing existing peerconnection")
 		if err := existingPeerConnection.GracefulClose(); err != nil {
-			log.Println("WhipSession.AddPeerConnection.Close.Error", err)
+			log.Println("WHIPSession.AddPeerConnection.Close.Error", err)
 		}
 	}
 
-	whip.RegisterWhipHandlers(peerConnection, streamKey)
+	whip.RegisterWHIPHandlers(peerConnection, streamKey)
 }
 
-func (whip *WhipSession) RemovePeerConnection() {
-	log.Println("WhipSession.RemovePeerConnection", whip.Id)
+func (whip *WHIPSession) RemovePeerConnection() {
+	log.Println("WHIPSession.RemovePeerConnection", whip.ID)
 
 	whip.PeerConnectionLock.Lock()
 	peerConnection := whip.PeerConnection
@@ -38,13 +38,13 @@ func (whip *WhipSession) RemovePeerConnection() {
 	}
 
 	if err := peerConnection.Close(); err != nil {
-		log.Println("WhipSession.RemovePeerConnection.Error", err)
+		log.Println("WHIPSession.RemovePeerConnection.Error", err)
 	}
 
-	log.Println("WhipSession.RemovePeerConnection.Completed", whip.Id)
+	log.Println("WHIPSession.RemovePeerConnection.Completed", whip.ID)
 }
 
-func (whip *WhipSession) SendPLI() {
+func (whip *WHIPSession) SendPLI() {
 	whip.PeerConnectionLock.RLock()
 	peerConnection := whip.PeerConnection
 	whip.PeerConnectionLock.RUnlock()
@@ -58,11 +58,11 @@ func (whip *WhipSession) SendPLI() {
 	}
 
 	if err := peerConnection.WriteRTCP(packets); err != nil {
-		log.Println("WhipSession.SendPLI.WriteRTCP.Error", err)
+		log.Println("WHIPSession.SendPLI.WriteRTCP.Error", err)
 	}
 }
 
-func (whip *WhipSession) getPLIPackets() []rtcp.Packet {
+func (whip *WHIPSession) getPLIPackets() []rtcp.Packet {
 	whip.TracksLock.RLock()
 	defer whip.TracksLock.RUnlock()
 

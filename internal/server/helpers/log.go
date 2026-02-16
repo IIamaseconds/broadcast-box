@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func LogHttpError(responseWriter http.ResponseWriter, error string, code int) {
-	log.Println("LogHttpError", error)
+func LogHTTPError(responseWriter http.ResponseWriter, error string, code int) {
+	log.Println("LogHTTPError", error)
 	http.Error(responseWriter, error, code)
 }

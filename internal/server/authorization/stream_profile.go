@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	STREAM_POLICY_ANYONE        = "ANYONE"
-	STREAM_POLICY_WITH_RESERVED = "ANYONE_WITH_RESERVED"
-	STREAM_POLICY_RESERVED_ONLY = "RESERVED"
+	StreamPolicyAnyone       = "ANYONE"
+	StreamPolicyWithReserved = "ANYONE_WITH_RESERVED"
+	StreamPolicyReservedOnly = "RESERVED"
 )
 
 func isValidStreamKey(streamKey string) bool {
@@ -30,7 +30,7 @@ func CreateProfile(streamKey string) (string, error) {
 		return "", fmt.Errorf("streamkey has invalid characters, only numbers, letters, dash and underscore allowed")
 	}
 
-	profilePath := os.Getenv(environment.STREAM_PROFILE_PATH)
+	profilePath := os.Getenv(environment.StreamProfilePath)
 	assureProfilePath()
 
 	if hasExistingStreamKey(streamKey) {
@@ -88,7 +88,7 @@ func UpdateProfile(token string, motd string, isPublic bool) error {
 		return err
 	}
 
-	profilePath := os.Getenv(environment.STREAM_PROFILE_PATH)
+	profilePath := os.Getenv(environment.StreamProfilePath)
 	profileFilePath, err := getProfileFileNameByBearerToken(token)
 	if err != nil {
 		log.Println("Authorization: Error ocurred while trying to update profile")
@@ -119,7 +119,7 @@ func RemoveProfile(streamKey string) (bool, error) {
 		return false, fmt.Errorf("Profile could not be found")
 	}
 
-	profilePath := os.Getenv(environment.STREAM_PROFILE_PATH)
+	profilePath := os.Getenv(environment.StreamProfilePath)
 	err := os.Remove(filepath.Join(profilePath, fileName))
 	if err != nil {
 		return false, err
@@ -130,7 +130,7 @@ func RemoveProfile(streamKey string) (bool, error) {
 
 // Returns the publicly available profile
 func GetPublicProfile(bearerToken string) (*PublicProfile, error) {
-	profilePath := os.Getenv(environment.STREAM_PROFILE_PATH)
+	profilePath := os.Getenv(environment.StreamProfilePath)
 	assureProfilePath()
 
 	fileName, err := getProfileFileNameByBearerToken(bearerToken)
@@ -155,7 +155,7 @@ func GetPublicProfile(bearerToken string) (*PublicProfile, error) {
 
 // Returns the publicly available profile
 func GetPersonalProfile(bearerToken string) (*PersonalProfile, error) {
-	profilePath := os.Getenv(environment.STREAM_PROFILE_PATH)
+	profilePath := os.Getenv(environment.StreamProfilePath)
 	assureProfilePath()
 
 	fileName, err := getProfileFileNameByBearerToken(bearerToken)
@@ -180,7 +180,7 @@ func GetPersonalProfile(bearerToken string) (*PersonalProfile, error) {
 
 // Returns a slice of profiles intended for admin endpoints
 func GetAdminProfilesAll() (profiles []AdminProfile, err error) {
-	profilePath := os.Getenv(environment.STREAM_PROFILE_PATH)
+	profilePath := os.Getenv(environment.StreamProfilePath)
 
 	files, err := os.ReadDir(profilePath)
 	if err != nil {
@@ -232,7 +232,7 @@ func ResetProfileToken(streamKey string) error {
 		return fmt.Errorf("authorization: profile could not be found")
 	}
 
-	profilePath := os.Getenv(environment.STREAM_PROFILE_PATH)
+	profilePath := os.Getenv(environment.StreamProfilePath)
 	newFileName := streamKey + "_" + generateToken()
 	currentPath := filepath.Join(profilePath, fileName)
 	newPath := filepath.Join(profilePath, newFileName)

@@ -24,28 +24,28 @@ func Setup() {
 	udpMuxCache := map[int]*ice.MultiUDPMuxDefault{}
 	tcpMuxCache := map[string]ice.TCPMux{}
 
-	initializeApiWhip(mediaEngine, udpMuxCache, tcpMuxCache, &interceptorRegistry)
-	initializeApiWhep(mediaEngine, udpMuxCache, tcpMuxCache, &interceptorRegistry)
+	initializeAPIWHIP(mediaEngine, udpMuxCache, tcpMuxCache, &interceptorRegistry)
+	initializeAPIWHEP(mediaEngine, udpMuxCache, tcpMuxCache, &interceptorRegistry)
 }
 
-func initializeApiWhip(mediaEngine *webrtc.MediaEngine, udpMuxCache map[int]*ice.MultiUDPMuxDefault, tcpMuxCache map[string]ice.TCPMux, registry *interceptor.Registry) {
-	manager.ApiWhip = webrtc.NewAPI(
+func initializeAPIWHIP(mediaEngine *webrtc.MediaEngine, udpMuxCache map[int]*ice.MultiUDPMuxDefault, tcpMuxCache map[string]ice.TCPMux, registry *interceptor.Registry) {
+	manager.APIWHIP = webrtc.NewAPI(
 		webrtc.WithMediaEngine(mediaEngine),
 		webrtc.WithInterceptorRegistry(registry),
 		webrtc.WithSettingEngine(GetSettingEngine(true, tcpMuxCache, udpMuxCache)),
 	)
 }
 
-func initializeApiWhep(mediaEngine *webrtc.MediaEngine, udpMuxCache map[int]*ice.MultiUDPMuxDefault, tcpMuxCache map[string]ice.TCPMux, registry *interceptor.Registry) {
-	manager.ApiWhep = webrtc.NewAPI(
+func initializeAPIWHEP(mediaEngine *webrtc.MediaEngine, udpMuxCache map[int]*ice.MultiUDPMuxDefault, tcpMuxCache map[string]ice.TCPMux, registry *interceptor.Registry) {
+	manager.APIWHEP = webrtc.NewAPI(
 		webrtc.WithMediaEngine(mediaEngine),
 		webrtc.WithInterceptorRegistry(registry),
 		webrtc.WithSettingEngine(GetSettingEngine(false, tcpMuxCache, udpMuxCache)),
 	)
 }
 
-func HandleWhepPatch(sessionId, body string) error {
-	session, isFound := manager.SessionsManager.GetWhepSessionById(sessionId)
+func HandleWHEPPatch(sessionID, body string) error {
+	session, isFound := manager.SessionsManager.GetWHEPSessionByID(sessionID)
 
 	if !isFound {
 		return errors.New("no session found")
@@ -61,8 +61,8 @@ func HandleWhepPatch(sessionId, body string) error {
 	return nil
 }
 
-func HandleWhipPatch(sessionId, body string) error {
-	session, isFound := manager.SessionsManager.GetSessionById(sessionId)
+func HandleWHIPPatch(sessionID, body string) error {
+	session, isFound := manager.SessionsManager.GetSessionByID(sessionID)
 
 	if !isFound {
 		return errors.New("no session found")
@@ -83,8 +83,8 @@ func HandleWhipPatch(sessionId, body string) error {
 	return nil
 }
 
-func HandleWhipDelete(sessionId string) error {
-	session, isFound := manager.SessionsManager.GetSessionByHostSessionId(sessionId)
+func HandleWHIPDelete(sessionID string) error {
+	session, isFound := manager.SessionsManager.GetSessionByHostSessionID(sessionID)
 
 	if !isFound {
 		return errors.New("no session found")

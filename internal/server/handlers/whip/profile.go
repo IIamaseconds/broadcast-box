@@ -24,7 +24,7 @@ func ProfileHandler(responseWriter http.ResponseWriter, request *http.Request) {
 		profile, err := authorization.GetPersonalProfile(token)
 
 		if err != nil {
-			helpers.LogHttpError(
+			helpers.LogHTTPError(
 				responseWriter,
 				"Profile not found",
 				http.StatusNoContent)
@@ -33,7 +33,7 @@ func ProfileHandler(responseWriter http.ResponseWriter, request *http.Request) {
 		}
 
 		if err := json.NewEncoder(responseWriter).Encode(profile); err != nil {
-			helpers.LogHttpError(
+			helpers.LogHTTPError(
 				responseWriter,
 				"Internal Server Error",
 				http.StatusInternalServerError)
@@ -50,7 +50,7 @@ func ProfileHandler(responseWriter http.ResponseWriter, request *http.Request) {
 		body, _ := io.ReadAll(request.Body)
 		var payload updateProfilePayload
 		if err := json.Unmarshal(body, &payload); err != nil {
-			helpers.LogHttpError(
+			helpers.LogHTTPError(
 				responseWriter,
 				"Internal Server Error",
 				http.StatusInternalServerError)
@@ -61,7 +61,7 @@ func ProfileHandler(responseWriter http.ResponseWriter, request *http.Request) {
 		// Update stored profile
 		err := authorization.UpdateProfile(token, payload.Motd, payload.IsPublic)
 		if err != nil {
-			helpers.LogHttpError(
+			helpers.LogHTTPError(
 				responseWriter,
 				"Internal Server Error",
 				http.StatusInternalServerError)
