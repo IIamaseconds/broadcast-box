@@ -1,7 +1,6 @@
 package whep
 
 import (
-	"context"
 	"log"
 	"time"
 
@@ -21,7 +20,6 @@ func CreateNewWHEP(
 ) (w *WHEPSession) {
 	log.Println("WHEPSession.CreateNewWHEP", whepSessionID)
 
-	activeContext, activeContextCancel := context.WithCancel(context.Background())
 	w = &WHEPSession{
 		SessionID:               whepSessionID,
 		AudioTrack:              audioTrack,
@@ -30,8 +28,6 @@ func CreateNewWHEP(
 		VideoTimestamp:          5000,
 		SSESubscribers:          make(map[string]sseSubscriber),
 		PeerConnection:          peerConnection,
-		ActiveContext:           activeContext,
-		ActiveContextCancel:     activeContextCancel,
 		pliSender:               pliSender,
 		videoBitrateWindowStart: time.Now(),
 	}
@@ -74,8 +70,14 @@ func (w *WHEPSession) Close() {
 		w.SSESubscribers = make(map[string]sseSubscriber)
 		w.SSESubscribersLock.Unlock()
 
-		w.ActiveContextCancel()
+		if w.onClose != nil {
+			w.onClose(w.SessionID)
+		}
 	})
+}
+
+func (w *WHEPSession) SetOnClose(onClose func(string)) {
+	w.onClose = onClose
 }
 
 // Get the current status of the WHEP session

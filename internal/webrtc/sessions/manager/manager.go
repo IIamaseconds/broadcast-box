@@ -1,7 +1,6 @@
 package manager
 
 import (
-	"context"
 	"log"
 	"maps"
 	"time"
@@ -22,7 +21,6 @@ func (m *SessionManager) Setup() {
 // Add new session
 func (m *SessionManager) addSession(profile authorization.PublicProfile) (s *session.Session, err error) {
 	log.Println("SessionManager.AddWHIPSession")
-	activeContext, activeContextCancel := context.WithCancel(context.Background())
 
 	s = &session.Session{
 
@@ -31,27 +29,19 @@ func (m *SessionManager) addSession(profile authorization.PublicProfile) (s *ses
 		MOTD:        profile.MOTD,
 		StreamStart: time.Now(),
 
-		ActiveContext:       activeContext,
-		ActiveContextCancel: activeContextCancel,
-
 		WHEPSessions: map[string]*whep.WHEPSession{},
 	}
+	s.SetOnClose(func() {
+		log.Println("SessionManager.Session.Done")
+		m.sessionsLock.Lock()
+		delete(m.sessions, profile.StreamKey)
+		m.sessionsLock.Unlock()
+	})
 
 	s.HasHost.Store(true)
 	m.sessionsLock.Lock()
 	m.sessions[profile.StreamKey] = s
 	m.sessionsLock.Unlock()
-
-	go func() {
-		<-activeContext.Done()
-		log.Println("SessionManager.Session.Done")
-
-		m.sessionsLock.Lock()
-		delete(m.sessions, profile.StreamKey)
-		m.sessionsLock.Unlock()
-
-	}()
-
 	return s, nil
 }
 

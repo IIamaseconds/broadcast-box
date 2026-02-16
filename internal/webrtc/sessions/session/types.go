@@ -1,7 +1,6 @@
 package session
 
 import (
-	"context"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -23,9 +22,8 @@ type Session struct {
 
 	Host atomic.Pointer[whip.WHIPSession]
 
-	// Context
-	ActiveContext       context.Context
-	ActiveContextCancel func()
+	closeOnce sync.Once
+	onClose   func()
 
 	// Protects WHEPSessions
 	WHEPSessionsLock sync.RWMutex

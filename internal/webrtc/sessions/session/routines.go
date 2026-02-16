@@ -23,16 +23,6 @@ import (
 //
 // }
 
-// Waits for WHEP disconnect and removes the session
-func (s *Session) handleWHEPConnection(whepSession *whep.WHEPSession) {
-	log.Println("Session.WHEPSession.Connected:", s.StreamKey)
-
-	<-whepSession.ActiveContext.Done()
-
-	log.Println("Session.WHEPSession.Disconnected:", s.StreamKey, " - ", whepSession.SessionID)
-	s.removeWHEP(whepSession.SessionID)
-}
-
 func (s *Session) handleWHEPVideoRTCPSender(whepSession *whep.WHEPSession, rtcpSender *webrtc.RTPSender) {
 	for {
 		rtcpPackets, _, rtcpErr := rtcpSender.ReadRTCP()

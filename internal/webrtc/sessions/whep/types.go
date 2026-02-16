@@ -1,7 +1,6 @@
 package whep
 
 import (
-	"context"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -21,12 +20,11 @@ type (
 		IsWaitingForKeyframe atomic.Bool
 		IsSessionClosed      atomic.Bool
 
-		SSESubscribersLock  sync.RWMutex
-		SSESubscribers      map[string]sseSubscriber
-		SessionClose        sync.Once
-		ActiveContext       context.Context
-		ActiveContextCancel func()
-		pliSender           func()
+		SSESubscribersLock sync.RWMutex
+		SSESubscribers     map[string]sseSubscriber
+		SessionClose       sync.Once
+		onClose            func(string)
+		pliSender          func()
 
 		PeerConnectionLock sync.RWMutex
 		PeerConnection     *webrtc.PeerConnection
