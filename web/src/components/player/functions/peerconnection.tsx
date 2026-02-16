@@ -98,8 +98,6 @@ export async function PeerConnectionSetup(props: SetupPeerConnectionProps): Prom
 		.setLocalDescription(offer)
 		.catch((err) => console.error("PeerConnection.SetLocalDescription", err));
 
-	await waitForIceGatheringComplete(peerConnection)
-
 	const whepResponse = await fetch(`/api/whep`, {
 		method: 'POST',
 		headers: {
@@ -167,20 +165,4 @@ export async function PeerConnectionSetup(props: SetupPeerConnectionProps): Prom
 
 async function createPeerConnection(): Promise<RTCPeerConnection> {
 	return new RTCPeerConnection();
-}
-
-export function waitForIceGatheringComplete(peerConnection: RTCPeerConnection) {
-	return new Promise(resolve => {
-		if (peerConnection.iceGatheringState === 'complete') {
-			resolve(true);
-		} else {
-			const checkState = () => {
-				if (peerConnection.iceGatheringState === 'complete') {
-					peerConnection.removeEventListener('icegatheringstatechange', checkState);
-					resolve(true);
-				}
-			};
-			peerConnection.addEventListener('icegatheringstatechange', checkState);
-		}
-	});
 }
