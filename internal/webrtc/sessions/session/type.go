@@ -12,11 +12,10 @@ import (
 
 type Session struct {
 
-	// Protects StreamKey, SessionId, MOTD, HasHost, IsPublic
+	// Protects StreamKey, MOTD, HasHost, IsPublic
 	StatusLock sync.RWMutex
 	StreamKey  string
 
-	SessionId   string
 	MOTD        string
 	HasHost     atomic.Bool
 	IsPublic    bool

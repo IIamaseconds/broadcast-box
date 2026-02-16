@@ -20,10 +20,6 @@ func assureProfilePath() {
 	}
 }
 
-func IsValidStreamBearerToken(bearerToken string) bool {
-	return hasExistingBearerToken(bearerToken)
-}
-
 func hasExistingStreamKey(streamKey string) bool {
 	profilePath := os.Getenv(environment.STREAM_PROFILE_PATH)
 	files, err := os.ReadDir(profilePath)

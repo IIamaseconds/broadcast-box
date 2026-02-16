@@ -12,7 +12,7 @@ import (
 )
 
 func statusHandler(responseWriter http.ResponseWriter, request *http.Request) {
-	streamKey := helpers.GetStreamKey(request)
+	streamKey := request.URL.Query().Get("key")
 
 	if streamKey == "" {
 		sessionStatusesHandler(responseWriter, request)
@@ -24,7 +24,7 @@ func statusHandler(responseWriter http.ResponseWriter, request *http.Request) {
 }
 
 func streamStatusHandler(responseWriter http.ResponseWriter, request *http.Request) {
-	streamKey := helpers.GetStreamKey(request)
+	streamKey := request.URL.Query().Get("key")
 
 	session, ok := manager.SessionsManager.GetSessionById(streamKey)
 

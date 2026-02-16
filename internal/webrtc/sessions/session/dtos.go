@@ -15,29 +15,6 @@ type WhipSessionStatus struct {
 }
 
 // Information for a whip session
-type WhepSessionState struct {
-	Id string `json:"id"`
-
-	AudioLayerCurrent   string `json:"audioLayerCurrent"`
-	AudioTimestamp      uint32 `json:"audioTimestamp"`
-	AudioPacketsWritten uint64 `json:"audioPacketsWritten"`
-	AudioSequenceNumber uint64 `json:"audioSequenceNumber"`
-
-	VideoLayerCurrent   string `json:"videoLayerCurrent"`
-	VideoTimestamp      uint32 `json:"videoTimestamp"`
-	VideoPacketsWritten uint64 `json:"videoPacketsWritten"`
-	VideoSequenceNumber uint64 `json:"videoSequenceNumber"`
-}
-
-// Status for an individual streaming session
-type StreamStatusDto struct {
-	StreamKey   string `json:"streamKey"`
-	MOTD        string `json:"motd"`
-	ViewerCount int    `json:"viewers"`
-	IsOnline    bool   `json:"isOnline"`
-}
-
-// Information for a whip session
 type StreamSessionDto struct {
 	StreamKey   string    `json:"streamKey"`
 	IsPublic    bool      `json:"isPublic"`

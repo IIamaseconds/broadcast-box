@@ -12,7 +12,6 @@ import (
 type (
 	WhipSession struct {
 		Id                  string
-		ContextLock         sync.RWMutex
 		ActiveContext       context.Context
 		ActiveContextCancel func()
 		PeerConnectionLock  sync.RWMutex
@@ -29,7 +28,6 @@ type (
 
 	VideoTrack struct {
 		Rid             string
-		SessionId       string
 		Priority        int
 		Bitrate         atomic.Uint64
 		PacketsReceived atomic.Uint64
@@ -41,7 +39,6 @@ type (
 	}
 	AudioTrack struct {
 		Rid             string
-		SessionId       string
 		Priority        int
 		PacketsReceived atomic.Uint64
 		PacketsDropped  atomic.Uint64

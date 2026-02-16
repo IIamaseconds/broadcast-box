@@ -7,11 +7,6 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
-type CreateWhipPeerConnectionResult struct {
-	PeerConnection *webrtc.PeerConnection
-	Error          error
-}
-
 func CreateWhepPeerConnection() (*webrtc.PeerConnection, error) {
 	return manager.ApiWhep.NewPeerConnection(GetPeerConnectionConfig())
 }

@@ -13,32 +13,6 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
-// Get Whip stream by stream key
-func (session *Session) GetHost(streamKey string) (host *whip.WhipSession, foundSession bool) {
-	log.Println("Session.GetHost")
-
-	host = session.Host.Load()
-	if host == nil {
-		return nil, false
-	}
-
-	return host, true
-}
-
-// Find Whep session by session id
-func (session *Session) GetWhepStream(sessionId string) (whepSession *whep.WhepSession, foundSession bool) {
-	log.Println("WhipSessionManager.GetWhepStream")
-
-	session.WhepSessionsLock.RLock()
-	defer session.WhepSessionsLock.RUnlock()
-
-	if whepSession, ok := session.WhepSessions[sessionId]; ok {
-		return whepSession, true
-	}
-
-	return nil, false
-}
-
 func (session *Session) UpdateStreamStatus(profile authorization.PublicProfile) {
 	session.StatusLock.Lock()
 
