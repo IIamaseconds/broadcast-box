@@ -19,7 +19,9 @@ type whepWebhookPayload struct {
 func TestWhepHandlerCallsWebhook(t *testing.T) {
 	payloads := make(chan whepWebhookPayload, 1)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
+		defer func() {
+			_ = r.Body.Close()
+		}()
 
 		var payload whepWebhookPayload
 		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
