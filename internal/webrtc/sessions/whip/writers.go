@@ -119,18 +119,11 @@ func (w *WHIPSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey str
 	rtpPkt := &rtp.Packet{}
 	pktBuf := make([]byte, 1500)
 	for {
-
-		select {
-		case <-w.ActiveContext.Done():
-			return
-		default:
-		}
-
 		rtpRead, _, err := remoteTrack.Read(pktBuf)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				log.Println("WHIPSession.VideoWriter.RtpPkt.EndOfStream")
-				w.ActiveContextCancel()
+				w.notifyClosed()
 				return
 			} else {
 				log.Println("WHIPSession.VideoWriter.RtpPkt.Err", err)

@@ -24,7 +24,7 @@ func (w *WHIPSession) onICEConnectionStateChangeHandler() func(webrtc.ICEConnect
 	return func(state webrtc.ICEConnectionState) {
 		if state == webrtc.ICEConnectionStateFailed || state == webrtc.ICEConnectionStateClosed {
 			log.Println("WHIPSession.PeerConnection.OnICEConnectionStateChange", w.ID)
-			w.ActiveContextCancel()
+			w.notifyClosed()
 		}
 	}
 }
@@ -51,9 +51,10 @@ func (w *WHIPSession) onConnectionStateChange() func(webrtc.PeerConnectionState)
 
 		switch state {
 		case webrtc.PeerConnectionStateClosed:
+			w.notifyClosed()
 		case webrtc.PeerConnectionStateFailed:
 			log.Println("WHIPSession.PeerConnection.OnConnectionStateChange: Host removed", w.ID)
-			w.ActiveContextCancel()
+			w.notifyClosed()
 
 		case webrtc.PeerConnectionStateConnected:
 			log.Println("WHIPSession.PeerConnection.OnConnectionStateChange: Host connected", w.ID)

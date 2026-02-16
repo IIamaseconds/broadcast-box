@@ -7,6 +7,18 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
+func (w *WHIPSession) SetOnClosed(onClosed func()) {
+	w.onClosed = onClosed
+}
+
+func (w *WHIPSession) notifyClosed() {
+	w.closeOnce.Do(func() {
+		if w.onClosed != nil {
+			w.onClosed()
+		}
+	})
+}
+
 func (w *WHIPSession) AddPeerConnection(peerConnection *webrtc.PeerConnection, streamKey string) {
 	log.Println("WHIPSession.AddPeerConnection")
 

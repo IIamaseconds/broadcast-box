@@ -1,7 +1,6 @@
 package whip
 
 import (
-	"context"
 	"sync"
 	"sync/atomic"
 
@@ -11,11 +10,11 @@ import (
 
 type (
 	WHIPSession struct {
-		ID                  string
-		ActiveContext       context.Context
-		ActiveContextCancel func()
-		PeerConnectionLock  sync.RWMutex
-		PeerConnection      *webrtc.PeerConnection
+		ID                 string
+		PeerConnection     *webrtc.PeerConnection
+		closeOnce          sync.Once
+		onClosed           func()
+		PeerConnectionLock sync.RWMutex
 
 		// Protects AudioTrack, VideoTracks
 		TracksLock  sync.RWMutex

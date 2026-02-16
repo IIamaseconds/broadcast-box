@@ -26,7 +26,6 @@ func CreateNewWHEP(
 		VideoTrack:              videoTrack,
 		AudioTimestamp:          5000,
 		VideoTimestamp:          5000,
-		SSESubscribers:          make(map[string]sseSubscriber),
 		PeerConnection:          peerConnection,
 		pliSender:               pliSender,
 		videoBitrateWindowStart: time.Now(),
@@ -65,10 +64,6 @@ func (w *WHEPSession) Close() {
 
 		w.VideoLock.Unlock()
 		w.AudioLock.Unlock()
-
-		w.SSESubscribersLock.Lock()
-		w.SSESubscribers = make(map[string]sseSubscriber)
-		w.SSESubscribersLock.Unlock()
 
 		if w.onClose != nil {
 			w.onClose(w.SessionID)
@@ -136,48 +131,6 @@ func (w *WHEPSession) SendPLI() {
 		w.pliSender()
 	}
 }
-
-func (w *WHEPSession) AddSSESubscriber(subscriberID string, writeEvent func(string) bool, cancel func()) bool {
-	w.SSESubscribersLock.Lock()
-	defer w.SSESubscribersLock.Unlock()
-
-	if w.IsSessionClosed.Load() || writeEvent == nil || cancel == nil {
-		return false
-	}
-
-	w.SSESubscribers[subscriberID] = sseSubscriber{
-		writeEvent: writeEvent,
-		cancel:     cancel,
-	}
-	return true
-}
-
-func (w *WHEPSession) RemoveSSESubscriber(subscriberID string) {
-	w.SSESubscribersLock.Lock()
-	delete(w.SSESubscribers, subscriberID)
-	w.SSESubscribersLock.Unlock()
-}
-
-func (w *WHEPSession) BroadcastSSE(message string) {
-	if message == "" || w.IsSessionClosed.Load() {
-		return
-	}
-
-	w.SSESubscribersLock.RLock()
-	subscribers := make(map[string]sseSubscriber, len(w.SSESubscribers))
-	for id, subscriber := range w.SSESubscribers {
-		subscribers[id] = subscriber
-	}
-	w.SSESubscribersLock.RUnlock()
-
-	for id, subscriber := range subscribers {
-		if !subscriber.writeEvent(message) {
-			w.RemoveSSESubscriber(id)
-			subscriber.cancel()
-		}
-	}
-}
-
 func (w *WHEPSession) updateVideoBitrateLocked(now time.Time) {
 	if w.videoBitrateWindowStart.IsZero() {
 		w.videoBitrateWindowStart = now

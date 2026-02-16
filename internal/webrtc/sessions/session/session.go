@@ -15,7 +15,6 @@ import (
 func (s *Session) UpdateStreamStatus(profile authorization.PublicProfile) {
 	s.StatusLock.Lock()
 
-	s.HasHost.Store(true)
 	s.MOTD = profile.MOTD
 	s.IsPublic = profile.IsPublic
 
@@ -80,6 +79,7 @@ func (s *Session) AddHost(peerConnection *webrtc.PeerConnection) (err error) {
 		AudioTracks: make(map[string]*whip.AudioTrack),
 		VideoTracks: make(map[string]*whip.VideoTrack),
 	}
+	host.SetOnClosed(s.handleHostClosed)
 
 	host.AddPeerConnection(peerConnection, s.StreamKey)
 	if !s.Host.CompareAndSwap(nil, host) {
@@ -89,8 +89,7 @@ func (s *Session) AddHost(peerConnection *webrtc.PeerConnection) (err error) {
 	}
 	host.WHEPSessionsSnapshot.Store(make(map[string]*whep.WHEPSession))
 	s.updateHostWHEPSessionsSnapshot()
-
-	go s.hostStatusLoop()
+	s.HasHost.Store(true)
 
 	return nil
 }
@@ -104,6 +103,7 @@ func (s *Session) RemoveHost() {
 	}
 
 	log.Println("Session.RemoveHost", s.StreamKey)
+	s.HasHost.Store(false)
 
 	host.WHEPSessionsSnapshot.Store(make(map[string]*whep.WHEPSession))
 	host.RemovePeerConnection()
@@ -125,6 +125,14 @@ func (s *Session) handleWHEPClose(whepSessionID string) {
 	}
 
 	s.updateHostWHEPSessionsSnapshot()
+
+	if s.isEmpty() {
+		s.close()
+	}
+}
+
+func (s *Session) handleHostClosed() {
+	s.RemoveHost()
 
 	if s.isEmpty() {
 		s.close()

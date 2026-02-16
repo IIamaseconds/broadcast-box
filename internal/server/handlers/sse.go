@@ -1,20 +1,17 @@
 package handlers
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/glimesh/broadcast-box/internal/environment"
 	"github.com/glimesh/broadcast-box/internal/server/helpers"
 	"github.com/glimesh/broadcast-box/internal/webrtc/sessions/manager"
-	"github.com/google/uuid"
 )
 
 func sseHandler(responseWriter http.ResponseWriter, request *http.Request) {
@@ -37,14 +34,10 @@ func sseHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	responseController := http.NewResponseController(responseWriter)
 
-	var writeLock sync.Mutex
-	writeEvent := func(writeCtx context.Context, msg string) bool {
-		if msg == "" || writeCtx.Err() != nil {
+	writeEvent := func(msg string) bool {
+		if msg == "" || ctx.Err() != nil {
 			return false
 		}
-
-		writeLock.Lock()
-		defer writeLock.Unlock()
 
 		if debugSseMessages {
 			log.Println("API.SSE Sending:", msg)
@@ -78,35 +71,12 @@ func sseHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	if streamSession, whepSession, foundSession := manager.SessionsManager.GetSessionAndWHEPByID(sessionID); foundSession {
-		subscriberCtx, subscriberCancel := context.WithCancel(ctx)
-		defer subscriberCancel()
-
-		subscriberID := uuid.NewString()
-		subscriberWrite := func(msg string) bool {
-			return writeEvent(subscriberCtx, msg)
-		}
-		if !whepSession.AddSSESubscriber(subscriberID, subscriberWrite, subscriberCancel) {
-			helpers.LogHTTPError(responseWriter, "Invalid request", http.StatusBadRequest)
-			return
-		}
-		defer whepSession.RemoveSSESubscriber(subscriberID)
-
-		if !subscriberWrite(streamSession.GetSessionStatsEvent()) {
+		if !writeEvent(streamSession.GetSessionStatsEvent()) {
 			return
 		}
 
 		host := streamSession.Host.Load()
-		if host != nil && !subscriberWrite(host.GetAvailableLayersEvent()) {
-			return
-		}
-
-		<-subscriberCtx.Done()
-		log.Println("API.SSE: Client disconnected")
-		return
-	}
-
-	if streamSession, foundSession := manager.SessionsManager.GetSessionByHostSessionID(sessionID); foundSession {
-		if !writeEvent(ctx, streamSession.GetSessionStatsEvent()) {
+		if host != nil && !writeEvent(host.GetAvailableLayersEvent()) {
 			return
 		}
 
@@ -119,7 +89,37 @@ func sseHandler(responseWriter http.ResponseWriter, request *http.Request) {
 				log.Println("API.SSE: Client disconnected")
 				return
 			case <-ticker.C:
-				if !writeEvent(ctx, streamSession.GetSessionStatsEvent()) {
+				if whepSession.IsSessionClosed.Load() {
+					return
+				}
+
+				if !writeEvent(streamSession.GetSessionStatsEvent()) {
+					return
+				}
+
+				host := streamSession.Host.Load()
+				if host != nil && !writeEvent(host.GetAvailableLayersEvent()) {
+					return
+				}
+			}
+		}
+	}
+
+	if streamSession, foundSession := manager.SessionsManager.GetSessionByHostSessionID(sessionID); foundSession {
+		if !writeEvent(streamSession.GetSessionStatsEvent()) {
+			return
+		}
+
+		ticker := time.NewTicker(5 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				log.Println("API.SSE: Client disconnected")
+				return
+			case <-ticker.C:
+				if !writeEvent(streamSession.GetSessionStatsEvent()) {
 					return
 				}
 			}

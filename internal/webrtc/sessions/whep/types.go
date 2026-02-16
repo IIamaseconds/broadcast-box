@@ -10,21 +10,14 @@ import (
 )
 
 type (
-	sseSubscriber struct {
-		writeEvent func(string) bool
-		cancel     func()
-	}
-
 	WHEPSession struct {
 		SessionID            string
 		IsWaitingForKeyframe atomic.Bool
 		IsSessionClosed      atomic.Bool
 
-		SSESubscribersLock sync.RWMutex
-		SSESubscribers     map[string]sseSubscriber
-		SessionClose       sync.Once
-		onClose            func(string)
-		pliSender          func()
+		SessionClose sync.Once
+		onClose      func(string)
+		pliSender    func()
 
 		PeerConnectionLock sync.RWMutex
 		PeerConnection     *webrtc.PeerConnection

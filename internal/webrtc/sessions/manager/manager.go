@@ -38,10 +38,10 @@ func (m *SessionManager) addSession(profile authorization.PublicProfile) (s *ses
 		m.sessionsLock.Unlock()
 	})
 
-	s.HasHost.Store(true)
 	m.sessionsLock.Lock()
 	m.sessions[profile.StreamKey] = s
 	m.sessionsLock.Unlock()
+
 	return s, nil
 }
 
