@@ -8,13 +8,13 @@ import (
 )
 
 func CreateWHEPPeerConnection() (*webrtc.PeerConnection, error) {
-	return manager.APIWHEP.NewPeerConnection(GetPeerConnectionConfig())
+	return manager.APIWHEP.NewPeerConnection(getPeerConnectionConfig())
 }
 
 func CreateWHIPPeerConnection(offer string) (*webrtc.PeerConnection, error) {
 	log.Println("CreateWHIPPeerConnection.CreateWHIPPeerConnection")
 
-	peerConnection, err := manager.APIWHIP.NewPeerConnection(GetPeerConnectionConfig())
+	peerConnection, err := manager.APIWHIP.NewPeerConnection(getPeerConnectionConfig())
 	if err != nil {
 		return nil, err
 	}

@@ -16,7 +16,7 @@ import (
 	"github.com/glimesh/broadcast-box/internal/webrtc/utils"
 )
 
-func WHEPHandler(responseWriter http.ResponseWriter, request *http.Request) {
+func whepHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost && request.Method != http.MethodPatch {
 		helpers.LogHTTPError(responseWriter, "Method not allowed", http.StatusMethodNotAllowed)
 		return

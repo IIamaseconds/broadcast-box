@@ -43,7 +43,7 @@ func LoadEnvironmentVariables() {
 }
 
 func loadConfigs() error {
-	if os.Getenv(AppEnv) == "development" {
+	if os.Getenv(appEnv) == "development" {
 		log.Println("Environment: Loading `" + envFileDevelopment + "`")
 		if err := godotenv.Load(envFileDevelopment); err != nil {
 			log.Printf("Environment: Could not load `%s`: %v", envFileDevelopment, err)
@@ -68,7 +68,7 @@ func loadConfigs() error {
 }
 
 func GetFrontendPath() string {
-	frontendPath := os.Getenv(FrontendPath)
+	frontendPath := os.Getenv(frontendPath)
 	if frontendPath == "" {
 		return defaultFrontendPath
 	}

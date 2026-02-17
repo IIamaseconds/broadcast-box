@@ -32,7 +32,7 @@ func initializeAPIWHIP(mediaEngine *webrtc.MediaEngine, udpMuxCache map[int]*ice
 	manager.APIWHIP = webrtc.NewAPI(
 		webrtc.WithMediaEngine(mediaEngine),
 		webrtc.WithInterceptorRegistry(registry),
-		webrtc.WithSettingEngine(GetSettingEngine(true, tcpMuxCache, udpMuxCache)),
+		webrtc.WithSettingEngine(getSettingEngine(true, tcpMuxCache, udpMuxCache)),
 	)
 }
 
@@ -40,7 +40,7 @@ func initializeAPIWHEP(mediaEngine *webrtc.MediaEngine, udpMuxCache map[int]*ice
 	manager.APIWHEP = webrtc.NewAPI(
 		webrtc.WithMediaEngine(mediaEngine),
 		webrtc.WithInterceptorRegistry(registry),
-		webrtc.WithSettingEngine(GetSettingEngine(false, tcpMuxCache, udpMuxCache)),
+		webrtc.WithSettingEngine(getSettingEngine(false, tcpMuxCache, udpMuxCache)),
 	)
 }
 

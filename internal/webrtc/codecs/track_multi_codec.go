@@ -60,7 +60,7 @@ func (t *TrackMultiCodec) Bind(ctx webrtc.TrackLocalContext) (webrtc.RTPCodecPar
 	codecParameters := ctx.CodecParameters()
 	for parameters := range codecParameters {
 		switch GetAudioTrackCodec(codecParameters[parameters].MimeType) {
-		case AudioTrackCodecOpus:
+		case audioTrackCodecOpus:
 			t.payloadTypeOpus = uint8(codecParameters[parameters].PayloadType)
 			t.currentPayloadType = t.payloadTypeOpus
 		}
@@ -143,7 +143,7 @@ func (t *TrackMultiCodec) WriteRTP(packet *rtp.Packet, codec TrackCodeType) erro
 			t.currentPayloadType = t.payloadTypeVP9
 		case VideoTrackCodecAV1:
 			t.currentPayloadType = t.payloadTypeAV1
-		case AudioTrackCodecOpus:
+		case audioTrackCodecOpus:
 			t.currentPayloadType = t.payloadTypeOpus
 		}
 	}

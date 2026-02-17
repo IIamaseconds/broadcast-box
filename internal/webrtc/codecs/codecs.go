@@ -19,24 +19,24 @@ const (
 	VideoTrackCodecVP9
 	VideoTrackCodecAV1
 
-	AudioTrackCodecOpus
+	audioTrackCodecOpus
 )
 
-var VideoRTCPFeedback = []webrtc.RTCPFeedback{
+var videoRTCPFeedback = []webrtc.RTCPFeedback{
 	{Type: "goog-remb", Parameter: ""},
 	{Type: "ccm", Parameter: "fir"},
 	{Type: "nack", Parameter: ""},
 	{Type: "nack", Parameter: "pli"},
 }
 
-var VideoCodecs = []webrtc.RTPCodecParameters{
+var videoCodecs = []webrtc.RTPCodecParameters{
 	{
 		PayloadType: 96,
 		RTPCodecCapability: webrtc.RTPCodecCapability{
 			MimeType:     webrtc.MimeTypeH264,
 			ClockRate:    90000,
 			SDPFmtpLine:  "level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f",
-			RTCPFeedback: VideoRTCPFeedback,
+			RTCPFeedback: videoRTCPFeedback,
 		},
 	},
 	{
@@ -45,7 +45,7 @@ var VideoCodecs = []webrtc.RTPCodecParameters{
 			MimeType:     webrtc.MimeTypeH264,
 			ClockRate:    90000,
 			SDPFmtpLine:  "level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f",
-			RTCPFeedback: VideoRTCPFeedback,
+			RTCPFeedback: videoRTCPFeedback,
 		},
 	},
 	{
@@ -54,7 +54,7 @@ var VideoCodecs = []webrtc.RTPCodecParameters{
 			MimeType:     webrtc.MimeTypeH264,
 			ClockRate:    90000,
 			SDPFmtpLine:  "level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f",
-			RTCPFeedback: VideoRTCPFeedback,
+			RTCPFeedback: videoRTCPFeedback,
 		},
 	},
 	{
@@ -63,7 +63,7 @@ var VideoCodecs = []webrtc.RTPCodecParameters{
 			MimeType:     webrtc.MimeTypeH264,
 			ClockRate:    90000,
 			SDPFmtpLine:  "level-asymmetry-allowed=1;packetization-mode=0;profile-level-id=42001f",
-			RTCPFeedback: VideoRTCPFeedback,
+			RTCPFeedback: videoRTCPFeedback,
 		},
 	},
 	{
@@ -72,7 +72,7 @@ var VideoCodecs = []webrtc.RTPCodecParameters{
 			MimeType:     webrtc.MimeTypeH264,
 			ClockRate:    90000,
 			SDPFmtpLine:  "level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f",
-			RTCPFeedback: VideoRTCPFeedback,
+			RTCPFeedback: videoRTCPFeedback,
 		},
 	},
 	{
@@ -81,7 +81,7 @@ var VideoCodecs = []webrtc.RTPCodecParameters{
 			MimeType:     webrtc.MimeTypeH264,
 			ClockRate:    90000,
 			SDPFmtpLine:  "level-asymmetry-allowed=1;packetization-mode=0;profile-level-id=42e01f",
-			RTCPFeedback: VideoRTCPFeedback,
+			RTCPFeedback: videoRTCPFeedback,
 		},
 	},
 	{
@@ -90,7 +90,7 @@ var VideoCodecs = []webrtc.RTPCodecParameters{
 			MimeType:     webrtc.MimeTypeH264,
 			ClockRate:    90000,
 			SDPFmtpLine:  "level-asymmetry-allowed=1;packetization-mode=0;profile-level-id=4d001f",
-			RTCPFeedback: VideoRTCPFeedback,
+			RTCPFeedback: videoRTCPFeedback,
 		},
 	},
 	{
@@ -99,7 +99,7 @@ var VideoCodecs = []webrtc.RTPCodecParameters{
 			MimeType:     webrtc.MimeTypeAV1,
 			ClockRate:    90000,
 			SDPFmtpLine:  "",
-			RTCPFeedback: VideoRTCPFeedback,
+			RTCPFeedback: videoRTCPFeedback,
 		},
 	},
 	{
@@ -108,7 +108,7 @@ var VideoCodecs = []webrtc.RTPCodecParameters{
 			MimeType:     webrtc.MimeTypeVP9,
 			ClockRate:    90000,
 			SDPFmtpLine:  "profile-id=0",
-			RTCPFeedback: VideoRTCPFeedback,
+			RTCPFeedback: videoRTCPFeedback,
 		},
 	},
 	{
@@ -117,7 +117,7 @@ var VideoCodecs = []webrtc.RTPCodecParameters{
 			MimeType:     webrtc.MimeTypeVP9,
 			ClockRate:    90000,
 			SDPFmtpLine:  "profile-id=2",
-			RTCPFeedback: VideoRTCPFeedback,
+			RTCPFeedback: videoRTCPFeedback,
 		},
 	},
 	{
@@ -126,12 +126,12 @@ var VideoCodecs = []webrtc.RTPCodecParameters{
 			MimeType:     webrtc.MimeTypeH265,
 			ClockRate:    90000,
 			SDPFmtpLine:  "level-id=93;profile-id=1;tier-flag=0;tx-mode=SRST",
-			RTCPFeedback: VideoRTCPFeedback,
+			RTCPFeedback: videoRTCPFeedback,
 		},
 	},
 }
 
-var AudioCodecs = []webrtc.RTPCodecParameters{
+var audioCodecs = []webrtc.RTPCodecParameters{
 	{
 		PayloadType: 111,
 		RTPCodecCapability: webrtc.RTPCodecCapability{
@@ -167,7 +167,7 @@ func GetAudioTrackCodec(codec string) TrackCodeType {
 
 	switch {
 	case strings.Contains(lowerCase, strings.ToLower(webrtc.MimeTypeOpus)):
-		return AudioTrackCodecOpus
+		return audioTrackCodecOpus
 	}
 
 	return 0

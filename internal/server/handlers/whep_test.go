@@ -41,7 +41,7 @@ func TestWHEPHandlerCallsWebhook(t *testing.T) {
 	req.RemoteAddr = "203.0.113.10:1234"
 
 	resp := httptest.NewRecorder()
-	WHEPHandler(resp, req)
+	whepHandler(resp, req)
 
 	if resp.Code != http.StatusUnauthorized {
 		t.Fatalf("expected status %d, got %d", http.StatusUnauthorized, resp.Code)

@@ -8,7 +8,7 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
-func GetPeerConnectionConfig() webrtc.Configuration {
+func getPeerConnectionConfig() webrtc.Configuration {
 	config := webrtc.Configuration{}
 	if stunServers := os.Getenv(environment.STUNServers); stunServers != "" {
 		for stunServer := range strings.SplitSeq(stunServers, "|") {

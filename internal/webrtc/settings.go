@@ -16,7 +16,7 @@ import (
 	"github.com/glimesh/broadcast-box/internal/ip"
 )
 
-func GetSettingEngine(isWHIP bool, tcpMuxCache map[string]ice.TCPMux, udpMuxCache map[int]*ice.MultiUDPMuxDefault) (settingEngine webrtc.SettingEngine) {
+func getSettingEngine(isWHIP bool, tcpMuxCache map[string]ice.TCPMux, udpMuxCache map[int]*ice.MultiUDPMuxDefault) (settingEngine webrtc.SettingEngine) {
 	var (
 		udpMuxOpts []ice.UDPMuxFromPortOption
 	)

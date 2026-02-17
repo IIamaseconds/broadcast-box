@@ -18,7 +18,7 @@ func RegisterCodecs(mediaEngine *webrtc.MediaEngine) {
 
 func registerAudioCodecs(mediaEngine *webrtc.MediaEngine) []error {
 	errors := []error{}
-	for _, codec := range AudioCodecs {
+	for _, codec := range audioCodecs {
 		if err := mediaEngine.RegisterCodec(codec, webrtc.RTPCodecTypeAudio); err != nil {
 			log.Println("Error registering codec", codec.MimeType)
 			errors = append(errors, err)
@@ -35,7 +35,7 @@ func registerAudioCodecs(mediaEngine *webrtc.MediaEngine) []error {
 
 func registerVideoCodecs(mediaEngine *webrtc.MediaEngine) []error {
 	errors := []error{}
-	for _, codec := range VideoCodecs {
+	for _, codec := range videoCodecs {
 		if err := mediaEngine.RegisterCodec(codec, webrtc.RTPCodecTypeVideo); err != nil {
 			log.Println("Error registering codec", codec.MimeType)
 			errors = append(errors, err)

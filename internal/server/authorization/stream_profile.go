@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	StreamPolicyAnyone       = "ANYONE"
+	streamPolicyAnyone       = "ANYONE"
 	StreamPolicyWithReserved = "ANYONE_WITH_RESERVED"
 	StreamPolicyReservedOnly = "RESERVED"
 )
@@ -41,7 +41,7 @@ func CreateProfile(streamKey string) (string, error) {
 
 	fileName := streamKey + "_" + token
 	profileFilePath := filepath.Join(profilePath, fileName)
-	profile := Profile{
+	profile := profile{
 		FileName: fileName,
 		IsPublic: true,
 		MOTD:     "Welcome to " + streamKey + "!",
@@ -67,7 +67,7 @@ func CreateProfile(streamKey string) (string, error) {
 // Update a current profile
 func UpdateProfile(token string, motd string, isPublic bool) error {
 	if !hasExistingBearerToken(token) {
-		return fmt.Errorf("Profile was not found")
+		return fmt.Errorf("profile was not found")
 	}
 
 	profile, err := GetPersonalProfile(token)
@@ -116,7 +116,7 @@ func RemoveProfile(streamKey string) (bool, error) {
 	fileName, _ := getProfileFileNameByStreamKey(streamKey)
 	if fileName == "" {
 		log.Println("Authorization: RemoveProfile could not find", streamKey)
-		return false, fmt.Errorf("Profile could not be found")
+		return false, fmt.Errorf("profile could not be found")
 	}
 
 	profilePath := os.Getenv(environment.StreamProfilePath)
@@ -143,14 +143,14 @@ func GetPublicProfile(bearerToken string) (*PublicProfile, error) {
 		return nil, err
 	}
 
-	var profile Profile
+	var profile profile
 	if err := json.Unmarshal(data, &profile); err != nil {
 		log.Println("Authorization: File", bearerToken, "could not read. File may be corrupt.")
 		return nil, err
 	}
 	profile.FileName = fileName
 
-	return profile.AsPublicProfile(), nil
+	return profile.asPublicProfile(), nil
 }
 
 // Returns the publicly available profile
@@ -168,18 +168,18 @@ func GetPersonalProfile(bearerToken string) (*PersonalProfile, error) {
 		return nil, err
 	}
 
-	var profile Profile
+	var profile profile
 	if err := json.Unmarshal(data, &profile); err != nil {
 		log.Println("Authorization: File", bearerToken, "could not read. File may be corrupt.")
 		return nil, err
 	}
 	profile.FileName = fileName
 
-	return profile.AsPersonalProfile(), nil
+	return profile.asPersonalProfile(), nil
 }
 
 // Returns a slice of profiles intended for admin endpoints
-func GetAdminProfilesAll() (profiles []AdminProfile, err error) {
+func GetAdminProfilesAll() (profiles []adminProfile, err error) {
 	profilePath := os.Getenv(environment.StreamProfilePath)
 
 	files, err := os.ReadDir(profilePath)
@@ -191,7 +191,7 @@ func GetAdminProfilesAll() (profiles []AdminProfile, err error) {
 	for _, file := range files {
 		data, err := os.ReadFile(filepath.Join(profilePath, file.Name()))
 		if err != nil {
-			profiles = append(profiles, AdminProfile{
+			profiles = append(profiles, adminProfile{
 				StreamKey: file.Name(),
 				IsPublic:  false,
 				MOTD:      "Error reading profile from file: " + file.Name(),
@@ -200,10 +200,10 @@ func GetAdminProfilesAll() (profiles []AdminProfile, err error) {
 			continue
 		}
 
-		var profile Profile
+		var profile profile
 
 		if err := json.Unmarshal(data, &profile); err != nil {
-			profiles = append(profiles, AdminProfile{
+			profiles = append(profiles, adminProfile{
 				StreamKey: file.Name(),
 				IsPublic:  false,
 				MOTD:      "Invalid JSON in file" + file.Name(),
@@ -212,7 +212,7 @@ func GetAdminProfilesAll() (profiles []AdminProfile, err error) {
 		}
 
 		profile.FileName = file.Name()
-		profiles = append(profiles, *profile.AsAdminProfile())
+		profiles = append(profiles, *profile.asAdminProfile())
 	}
 
 	return profiles, nil

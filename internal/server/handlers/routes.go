@@ -21,8 +21,8 @@ func GetServeMuxHandler() http.HandlerFunc {
 	}
 
 	// WHIP/WHEP shared endpoints
-	serverMux.HandleFunc("/api/whep", corsHandler(WHEPHandler))
-	serverMux.HandleFunc("/api/whep/", corsHandler(WHEPHandler))
+	serverMux.HandleFunc("/api/whep", corsHandler(whepHandler))
+	serverMux.HandleFunc("/api/whep/", corsHandler(whepHandler))
 	serverMux.HandleFunc("/api/sse/", corsHandler(sseHandler))
 
 	// WHIP session endpoints

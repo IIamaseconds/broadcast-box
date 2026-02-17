@@ -19,7 +19,7 @@ var (
 )
 
 func SetupLogger() {
-	if strings.EqualFold(os.Getenv(LoggingEnabled), "false") {
+	if strings.EqualFold(os.Getenv(loggingEnabled), "false") {
 		return
 	}
 
@@ -74,7 +74,7 @@ func getLogFileWriter() (logFile *os.File, err error) {
 		log.Fatalf("Failed to create log directory: %v", err)
 	}
 
-	if envLogTruncateExistingFile := strings.EqualFold(os.Getenv(LoggingNewFileOnStartup), "true"); envLogTruncateExistingFile {
+	if envLogTruncateExistingFile := strings.EqualFold(os.Getenv(loggingNewFileOnStartup), "true"); envLogTruncateExistingFile {
 		logFile, err = os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	} else {
 		logFile, err = os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
@@ -91,13 +91,13 @@ func getLogFileWriter() (logFile *os.File, err error) {
 
 func getLogfilePath() (directory string, fileName string, logFilePath string) {
 	logDir := "logs"
-	if envLogDir := os.Getenv(LoggingDirectory); envLogDir != "" {
+	if envLogDir := os.Getenv(loggingDirectory); envLogDir != "" {
 		logDir = envLogDir
 	}
 
 	logFileName := time.Now().Format("20060102")
 
-	if envLogFileIsSingleFile := strings.EqualFold(os.Getenv(LoggingSingleFile), "true"); envLogFileIsSingleFile {
+	if envLogFileIsSingleFile := strings.EqualFold(os.Getenv(loggingSingleFile), "true"); envLogFileIsSingleFile {
 		logFileName = "log"
 	}
 

@@ -2,7 +2,7 @@ package environment
 
 const (
 	// SERVER
-	AppEnv                     = "APP_ENV"
+	appEnv                     = "APP_ENV"
 	HTTPAddress                = "HTTP_ADDRESS"
 	HTTPSRedirectPort          = "HTTPS_REDIRECT_PORT"
 	HTTPEnableRedirect         = "ENABLE_HTTP_REDIRECT"
@@ -12,7 +12,7 @@ const (
 	EnableProfiling            = "ENABLE_PROFILING"
 
 	// SSL
-	UseSSL  = "USE_SSL"
+	useSSL  = "USE_SSL"
 	SSLKey  = "SSL_KEY"
 	SSLCert = "SSL_CERT"
 
@@ -23,7 +23,7 @@ const (
 
 	// FRONTEND
 	FrontendDisabled   = "DISABLE_FRONTEND"
-	FrontendPath       = "FRONTEND_PATH"
+	frontendPath       = "FRONTEND_PATH"
 	FrontendAdminToken = "FRONTEND_ADMIN_TOKEN"
 
 	// WEBRTC
@@ -51,10 +51,10 @@ const (
 	DebugPrintSSEMessages   = "DEBUG_PRINT_SSE_MESSAGES"
 
 	// LOGGING
-	LoggingEnabled          = "LOGGING_ENABLED"
-	LoggingDirectory        = "LOGGING_DIRECTORY"
-	LoggingSingleFile       = "LOGGING_SINGLEFILE"
-	LoggingNewFileOnStartup = "LOGGING_NEW_FILE_ON_STARTUP"
+	loggingEnabled          = "LOGGING_ENABLED"
+	loggingDirectory        = "LOGGING_DIRECTORY"
+	loggingSingleFile       = "LOGGING_SINGLEFILE"
+	loggingNewFileOnStartup = "LOGGING_NEW_FILE_ON_STARTUP"
 	LoggingAPIEnabled       = "LOGGING_API_ENABLED"
 	LoggingAPIKey           = "LOGGING_API_KEY"
 )

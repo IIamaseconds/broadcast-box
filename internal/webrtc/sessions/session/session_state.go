@@ -6,7 +6,7 @@ import (
 )
 
 // Status for an individual streaming session
-type WHIPSessionStatus struct {
+type whipSessionStatus struct {
 	StreamKey   string    `json:"streamKey"`
 	MOTD        string    `json:"motd"`
 	ViewerCount int       `json:"viewers"`

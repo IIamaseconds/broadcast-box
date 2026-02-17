@@ -12,7 +12,7 @@ import (
 const defaultTimeout = time.Second * 5
 
 type webhookPayload struct {
-	Action      Action            `json:"action"`
+	Action      action            `json:"action"`
 	IP          string            `json:"ip"`
 	BearerToken string            `json:"bearerToken"`
 	QueryParams map[string]string `json:"queryParams"`
@@ -23,14 +23,14 @@ type webhookResponse struct {
 	StreamKey string `json:"streamKey"`
 }
 
-type Action string
+type action string
 
 const (
-	WHIPConnect Action = "whip-connect"
-	WHEPConnect Action = "whep-connect"
+	WHIPConnect action = "whip-connect"
+	WHEPConnect action = "whep-connect"
 )
 
-func CallWebhook(url string, action Action, bearerToken string, request *http.Request) (string, error) {
+func CallWebhook(url string, action action, bearerToken string, request *http.Request) (string, error) {
 	start := time.Now()
 
 	queryParams := make(map[string]string)

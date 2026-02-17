@@ -17,7 +17,7 @@ import (
 	pionCodecs "github.com/pion/rtp/codecs"
 )
 
-func (w *WHIPSession) AudioWriter(remoteTrack *webrtc.TrackRemote, streamKey string, peerConnection *webrtc.PeerConnection) {
+func (w *WHIPSession) audioWriter(remoteTrack *webrtc.TrackRemote, streamKey string, peerConnection *webrtc.PeerConnection) {
 	id := remoteTrack.RID()
 
 	if id == "" {
@@ -25,7 +25,7 @@ func (w *WHIPSession) AudioWriter(remoteTrack *webrtc.TrackRemote, streamKey str
 	}
 
 	codec := codecs.GetAudioTrackCodec(remoteTrack.Codec().MimeType)
-	track, err := w.AddAudioTrack(id, streamKey, codec)
+	track, err := w.addAudioTrack(id, streamKey, codec)
 	if err != nil {
 		log.Println("AudioWriter.AddTrack.Error:", err)
 		return
@@ -73,7 +73,7 @@ func (w *WHIPSession) AudioWriter(remoteTrack *webrtc.TrackRemote, streamKey str
 	}
 }
 
-func (w *WHIPSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey string, peerConnection *webrtc.PeerConnection) {
+func (w *WHIPSession) videoWriter(remoteTrack *webrtc.TrackRemote, streamKey string, peerConnection *webrtc.PeerConnection) {
 	id := remoteTrack.RID()
 
 	if id == "" {
@@ -81,7 +81,7 @@ func (w *WHIPSession) VideoWriter(remoteTrack *webrtc.TrackRemote, streamKey str
 	}
 
 	codec := codecs.GetVideoTrackCodec(remoteTrack.Codec().MimeType)
-	track, err := w.AddVideoTrack(id, streamKey, codec)
+	track, err := w.addVideoTrack(id, streamKey, codec)
 	if err != nil {
 		log.Println("WHIPSession.VideoWriter.AddTrack.Error:", err)
 		return

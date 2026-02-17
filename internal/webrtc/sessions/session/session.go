@@ -235,14 +235,14 @@ func (s *Session) updateHostWHEPSessionsSnapshot() {
 }
 
 // Get the status of the current session
-func (s *Session) GetStreamStatus() (status WHIPSessionStatus) {
+func (s *Session) GetStreamStatus() (status whipSessionStatus) {
 	s.WHEPSessionsLock.RLock()
 	whepSessionsCount := len(s.WHEPSessions)
 	s.WHEPSessionsLock.RUnlock()
 
 	s.StatusLock.RLock()
 
-	status = WHIPSessionStatus{
+	status = whipSessionStatus{
 		StreamKey:   s.StreamKey,
 		MOTD:        s.MOTD,
 		ViewerCount: whepSessionsCount,

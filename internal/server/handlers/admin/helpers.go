@@ -11,19 +11,19 @@ import (
 	"github.com/glimesh/broadcast-box/internal/server/helpers"
 )
 
-type SessionResponse struct {
+type sessionResponse struct {
 	IsValid      bool   `json:"isValid"`
 	ErrorMessage string `json:"errorMessage"`
 }
 
 // Verify that a bearer token is provided for an admin session
 // A response will be written to the response writter if the session is valid
-func verifyAdminSession(request *http.Request) *SessionResponse {
+func verifyAdminSession(request *http.Request) *sessionResponse {
 	token := helpers.ResolveBearerToken(request.Header.Get("Authorization"))
 	if token == "" {
 		log.Println("Authorization was not set")
 
-		return &SessionResponse{
+		return &sessionResponse{
 			IsValid:      false,
 			ErrorMessage: "Authorization was invalid",
 		}
@@ -32,13 +32,13 @@ func verifyAdminSession(request *http.Request) *SessionResponse {
 	adminAPIToken := os.Getenv(environment.FrontendAdminToken)
 
 	if adminAPIToken == "" || !strings.EqualFold(adminAPIToken, token) {
-		return &SessionResponse{
+		return &sessionResponse{
 			IsValid:      false,
 			ErrorMessage: "Authorization was invalid",
 		}
 	}
 
-	return &SessionResponse{
+	return &sessionResponse{
 		IsValid:      true,
 		ErrorMessage: "",
 	}
@@ -49,7 +49,7 @@ func verifyAdminSession(request *http.Request) *SessionResponse {
 func verifyValidMethod(expectedMethod string, responseWriter http.ResponseWriter, request *http.Request) bool {
 	if !strings.EqualFold(expectedMethod, request.Method) {
 		helpers.LogHTTPError(responseWriter, "Method not allowed", http.StatusMethodNotAllowed)
-		err := json.NewEncoder(responseWriter).Encode(&SessionResponse{
+		err := json.NewEncoder(responseWriter).Encode(&sessionResponse{
 			IsValid:      false,
 			ErrorMessage: "Method not allowed",
 		})

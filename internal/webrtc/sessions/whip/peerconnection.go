@@ -34,7 +34,7 @@ func (w *WHIPSession) AddPeerConnection(peerConnection *webrtc.PeerConnection, s
 		}
 	}
 
-	w.RegisterWHIPHandlers(peerConnection, streamKey)
+	w.registerWHIPHandlers(peerConnection, streamKey)
 }
 
 func (w *WHIPSession) RemovePeerConnection() {

@@ -4,8 +4,8 @@ import (
 	"strings"
 )
 
-// Internal Profile struct, do not use for endpoints
-type Profile struct {
+// Internal profile struct, do not use for endpoints
+type profile struct {
 	FileName string
 	IsActive bool
 	IsPublic bool
@@ -14,34 +14,34 @@ type Profile struct {
 
 var separator = "_"
 
-func (p *Profile) StreamKey() string {
+func (p *profile) streamKey() string {
 	splitIndex := strings.LastIndex(p.FileName, separator)
 	return p.FileName[:splitIndex+len(separator)-1]
 }
-func (p *Profile) StreamToken() string {
+func (p *profile) streamToken() string {
 	splitIndex := strings.LastIndex(p.FileName, separator)
 	return p.FileName[splitIndex+len(separator):]
 }
-func (p *Profile) AsPublicProfile() *PublicProfile {
+func (p *profile) asPublicProfile() *PublicProfile {
 	return &PublicProfile{
-		StreamKey: p.StreamKey(),
+		StreamKey: p.streamKey(),
 		IsActive:  p.IsActive,
 		IsPublic:  p.IsPublic,
 		MOTD:      p.MOTD,
 	}
 }
-func (p *Profile) AsPersonalProfile() *PersonalProfile {
+func (p *profile) asPersonalProfile() *PersonalProfile {
 	return &PersonalProfile{
-		StreamKey: p.StreamKey(),
+		StreamKey: p.streamKey(),
 		IsActive:  p.IsActive,
 		IsPublic:  p.IsPublic,
 		MOTD:      p.MOTD,
 	}
 }
-func (p *Profile) AsAdminProfile() *AdminProfile {
-	return &AdminProfile{
-		StreamKey: p.StreamKey(),
-		Token:     p.StreamToken(),
+func (p *profile) asAdminProfile() *adminProfile {
+	return &adminProfile{
+		StreamKey: p.streamKey(),
+		Token:     p.streamToken(),
 		IsPublic:  p.IsPublic,
 		MOTD:      p.MOTD,
 	}
@@ -64,7 +64,7 @@ type PersonalProfile struct {
 }
 
 // Admin profile struct for serving to admin specific endpoints
-type AdminProfile struct {
+type adminProfile struct {
 	StreamKey string `json:"streamKey"`
 	Token     string `json:"token"`
 	IsPublic  bool   `json:"isPublic"`

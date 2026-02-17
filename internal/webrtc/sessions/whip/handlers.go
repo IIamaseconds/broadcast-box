@@ -7,7 +7,7 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
-func (w *WHIPSession) RegisterWHIPHandlers(peerConnection *webrtc.PeerConnection, streamKey string) {
+func (w *WHIPSession) registerWHIPHandlers(peerConnection *webrtc.PeerConnection, streamKey string) {
 	log.Println("WHIPSession.RegisterHandlers")
 
 	// PeerConnection OnTrack handler
@@ -35,10 +35,10 @@ func (w *WHIPSession) onTrackHandler(peerConnection *webrtc.PeerConnection, stre
 
 		if strings.HasPrefix(remoteTrack.Codec().MimeType, "audio") {
 			// Handle audio stream
-			w.AudioWriter(remoteTrack, streamKey, peerConnection)
+			w.audioWriter(remoteTrack, streamKey, peerConnection)
 		} else {
 			// Handle video stream
-			w.VideoWriter(remoteTrack, streamKey, peerConnection)
+			w.videoWriter(remoteTrack, streamKey, peerConnection)
 		}
 
 		log.Println("WHIPSession.OnTrackHandler.TrackStopped", remoteTrack.RID())

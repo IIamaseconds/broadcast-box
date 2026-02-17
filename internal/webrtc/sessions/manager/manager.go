@@ -8,7 +8,6 @@ import (
 	"github.com/glimesh/broadcast-box/internal/server/authorization"
 	"github.com/glimesh/broadcast-box/internal/webrtc/sessions/session"
 	"github.com/glimesh/broadcast-box/internal/webrtc/sessions/whep"
-	"github.com/glimesh/broadcast-box/internal/webrtc/sessions/whip"
 )
 
 // Prepare the WHIP Session Manager
@@ -202,24 +201,6 @@ func (m *SessionManager) GetSessionAndWHEPByID(sessionID string) (streamSession 
 	}
 
 	return nil, nil, false
-}
-
-func (m *SessionManager) GetHostSessionByID(sessionID string) (host *whip.WHIPSession, foundSession bool) {
-	m.sessionsLock.RLock()
-	defer m.sessionsLock.RUnlock()
-
-	for _, session := range m.sessions {
-		host := session.Host.Load()
-		if host == nil {
-			continue
-		}
-
-		if sessionID == host.ID {
-			return host, true
-		}
-	}
-
-	return nil, false
 }
 
 func (m *SessionManager) GetSessionByHostSessionID(sessionID string) (session *session.Session, foundSession bool) {
