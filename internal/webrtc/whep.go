@@ -60,7 +60,16 @@ func WHEP(offer string, streamKey string) (string, string, error) {
 	}
 
 	// TODO: Should this be before gatherComplete to assure registered events are triggered at correct time?
-	if err := session.AddWHEP(whepSessionID, peerConnection, audioTrack, videoTrack, videoRTCPSender); err != nil {
+	if err := session.AddWHEP(
+		whepSessionID,
+		peerConnection,
+		audioTrack,
+		videoTrack,
+		videoRTCPSender,
+		func() {
+			manager.SessionsManager.SendPLIByWHEPSessionID(whepSessionID)
+		},
+	); err != nil {
 		return "", "", err
 	}
 

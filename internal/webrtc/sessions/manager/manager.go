@@ -168,6 +168,26 @@ func (m *SessionManager) GetWHEPSessionByID(sessionID string) (whep *whep.WHEPSe
 	return whepSession, foundSession
 }
 
+func (m *SessionManager) SendPLIByWHEPSessionID(sessionID string) {
+	streamSession, _, foundSession := m.GetSessionAndWHEPByID(sessionID)
+	if !foundSession {
+		log.Println("SessionManager.SendPLIByWHEPSessionID: WHEP session not found", sessionID)
+		return
+	}
+
+	host := streamSession.Host.Load()
+	if host == nil {
+		log.Println(
+			"SessionManager.SendPLIByWHEPSessionID: WHIP session not found",
+			"whepSessionID", sessionID,
+			"streamKey", streamSession.StreamKey,
+		)
+		return
+	}
+
+	host.SendPLI()
+}
+
 func (m *SessionManager) GetSessionAndWHEPByID(sessionID string) (streamSession *session.Session, whepSession *whep.WHEPSession, foundSession bool) {
 	m.sessionsLock.RLock()
 	defer m.sessionsLock.RUnlock()

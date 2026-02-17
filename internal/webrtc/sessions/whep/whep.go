@@ -12,9 +12,7 @@ import (
 func CreateNewWHEP(
 	whepSessionID string,
 	audioTrack *codecs.TrackMultiCodec,
-	audioLayer string,
 	videoTrack *codecs.TrackMultiCodec,
-	videoLayer string,
 	peerConnection *webrtc.PeerConnection,
 	pliSender func(),
 ) (w *WHEPSession) {
@@ -31,10 +29,8 @@ func CreateNewWHEP(
 		videoBitrateWindowStart: time.Now(),
 	}
 
-	log.Println("WHEPSession.CreateNewWHEP.AudioLayer", audioLayer)
-	log.Println("WHEPSession.CreateNewWHEP.VideoLayer", videoLayer)
-	w.AudioLayerCurrent.Store(audioLayer)
-	w.VideoLayerCurrent.Store(videoLayer)
+	w.AudioLayerCurrent.Store("")
+	w.VideoLayerCurrent.Store("")
 	w.IsWaitingForKeyframe.Store(true)
 	w.IsSessionClosed.Store(false)
 	return w
@@ -106,7 +102,7 @@ func (w *WHEPSession) GetWHEPSessionStatus() (state SessionState) {
 	return
 }
 
-// Finds the corresponding WHIP session to the WHEP session id and sets the requested audio layer
+// Sets the requested audio layer for this WHEP session.
 func (w *WHEPSession) SetAudioLayer(encodingID string) {
 	log.Println("Setting Audio Layer")
 	w.AudioLayerCurrent.Store(encodingID)
@@ -114,7 +110,7 @@ func (w *WHEPSession) SetAudioLayer(encodingID string) {
 	w.SendPLI()
 }
 
-// Finds the corresponding WHIP session to the WHEP session id and sets the requested video layer
+// Sets the requested video layer for this WHEP session.
 func (w *WHEPSession) SetVideoLayer(encodingID string) {
 	log.Println("Setting Video Layer")
 	w.VideoLayerCurrent.Store(encodingID)
@@ -127,10 +123,9 @@ func (w *WHEPSession) SendPLI() {
 		return
 	}
 
-	if w.pliSender != nil {
-		w.pliSender()
-	}
+	w.pliSender()
 }
+
 func (w *WHEPSession) updateVideoBitrateLocked(now time.Time) {
 	if w.videoBitrateWindowStart.IsZero() {
 		w.videoBitrateWindowStart = now
@@ -150,4 +145,31 @@ func (w *WHEPSession) updateVideoBitrateLocked(now time.Time) {
 	w.VideoBitrate.Store(uint64(float64(bytesDiff) / elapsed.Seconds()))
 	w.videoBitrateWindowStart = now
 	w.videoBitrateWindowBytes = w.VideoBytesWritten
+}
+
+func (w *WHEPSession) GetAudioLayerOrDefault(defaultLayer string) string {
+	w.AudioLock.Lock()
+	defer w.AudioLock.Unlock()
+
+	currentLayer, _ := w.AudioLayerCurrent.Load().(string)
+	if currentLayer != "" {
+		return currentLayer
+	}
+
+	w.AudioLayerCurrent.Store(defaultLayer)
+	return defaultLayer
+}
+
+func (w *WHEPSession) GetVideoLayerOrDefault(defaultLayer string) string {
+	w.VideoLock.Lock()
+	defer w.VideoLock.Unlock()
+
+	currentLayer, _ := w.VideoLayerCurrent.Load().(string)
+	if currentLayer != "" {
+		return currentLayer
+	}
+
+	w.VideoLayerCurrent.Store(defaultLayer)
+	w.IsWaitingForKeyframe.Store(true)
+	return defaultLayer
 }

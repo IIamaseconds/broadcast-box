@@ -25,31 +25,25 @@ func (session *Session) SetOnClose(onClose func()) {
 	session.onClose = onClose
 }
 
-// Add WHEP session to existing WHIP session
-func (s *Session) AddWHEP(whepSessionID string, peerConnection *webrtc.PeerConnection, audioTrack *codecs.TrackMultiCodec, videoTrack *codecs.TrackMultiCodec, videoRTCPSender *webrtc.RTPSender) (err error) {
+// Add WHEP viewer session
+func (s *Session) AddWHEP(whepSessionID string, peerConnection *webrtc.PeerConnection, audioTrack *codecs.TrackMultiCodec, videoTrack *codecs.TrackMultiCodec, videoRTCPSender *webrtc.RTPSender, pliSender func()) (err error) {
 	log.Println("WHIPSessionManager.WHIPSession.AddWHEPSession")
-
-	host := s.Host.Load()
-	if host == nil {
-		return fmt.Errorf("no host was found on the current session")
-	}
 
 	whepSession := whep.CreateNewWHEP(
 		whepSessionID,
 		audioTrack,
-		host.GetHighestPrioritizedAudioTrack(),
 		videoTrack,
-		host.GetHighestPrioritizedVideoTrack(),
 		peerConnection,
-		host.SendPLI)
+		pliSender,
+	)
 
-	whepSession.RegisterWHEPHandlers(peerConnection)
+	whepSession.SetOnClose(s.handleWHEPClose)
 
 	s.WHEPSessionsLock.Lock()
 	s.WHEPSessions[whepSessionID] = whepSession
 	s.WHEPSessionsLock.Unlock()
 	s.updateHostWHEPSessionsSnapshot()
-	whepSession.SetOnClose(s.handleWHEPClose)
+	whepSession.RegisterWHEPHandlers(peerConnection)
 	go s.handleWHEPVideoRTCPSender(whepSession, videoRTCPSender)
 
 	return nil

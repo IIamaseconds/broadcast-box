@@ -53,10 +53,20 @@ const Player = (props: PlayerProps) => {
 		onVideoLayerChange: (layers) => setVideoLayers(layers),
 		onLayerStatus: (status) => setCurrentLayersStatus(status),
 		onStreamStatus: (status) => {
+			setCurrentStreamStatus(() => status)
+
 			if (!status.isOnline) {
 				setStreamState("Offline")
+				return
 			}
-			setCurrentStreamStatus(() => status)
+
+			const videoElement = videoRef.current
+			if (videoElement !== null && !videoElement.paused && videoElement.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+				setStreamState("Playing")
+				return
+			}
+
+			setStreamState("Loading")
 		},
 		onError: () => setStreamState("Error"),
 	}
@@ -103,7 +113,6 @@ const Player = (props: PlayerProps) => {
 		player?.addEventListener('mouseleave', () => handleOverlayTimer(false))
 
 		peerConnectionConfig.onStreamRestart = () => {
-			// setCurrentLayersStatus(undefined)
 			setResetCounter((prev) => prev + 1)
 
 			PeerConnectionSetup(peerConnectionConfig)
