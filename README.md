@@ -22,63 +22,11 @@
 
 ## What is Broadcast Box
 
-Broadcast Box lets you broadcast to others in sub-second time. It was designed
-to be simple to use and easily modifiable. We wrote Broadcast Box to show off some
-of the cutting edge tech that is coming to the broadcast space.
+Broadcast Box lets you broadcast/screen-share to friends in sub-second time. It was designed
+to be simple to use and easily modifiable. Broadcast Box uses WebRTC, to learn more see
+the OBS [WHIP Streaming Guide](https://obsproject.com/kb/whip-streaming-guide)
 
 Want to contribute to the development of Broadcast Box? See [Contributing](./CONTRIBUTING.md).
-
-### Sub-second Latency
-
-Broadcast Box uses WebRTC for broadcast and playback. By using WebRTC instead of
-RTMP and HLS you get the fastest experience possible.
-
-### Latest in Video Compression
-
-With WebRTC you get access to the latest in video codecs. With AV1 you can send
-the same video quality with a [50%][av1-practical-use-case] reduction in bandwidth required.
-
-[av1-practical-use-case]: https://engineering.fb.com/2018/04/10/video-engineering/av1-beats-x264-and-libvpx-vp9-in-practical-use-case/
-
-### Broadcast all angles
-
-WebRTC allows you to upload multiple video streams in the same session. Now you can
-broadcast multiple camera angles, or share interactive video experiences in real time!
-
-### Broadcasters provide transcodes
-
-Transcodes are necessary if you want to provide a good experience to all your users.
-Generating them is prohibitively expensive though, WebRTC provides a solution. With WebRTC
-users can upload the same video at different quality levels. This
-keeps things cheap for the server operator and you still can provide the same
-experience.
-
-### Broadcasting for all
-
-WebRTC means anyone can be a broadcaster. With Broadcast Box you could use broadcast software like OBS.
-However, another option is publishing directly from your browser! Users just getting started with streaming
-don't need to worry about bitrates, codecs anymore. With one press of a button you can go live right from
-your browser with Broadcast Box. This makes live-streaming accessible to an entirely new audience.
-
-### Peer-to-Peer (if you need it)
-
-With Broadcast Box you can serve your video without a public IP or forwarding ports!
-
-Run Broadcast Box on the same machine that you are running OBS, and share your
-video with the world! WebRTC comes with P2P technology, so users can broadcast
-and playback video without paying for dedicated servers. To start the connection users will
-need to be able to connect to the HTTP server. After they have negotiated the session then
-NAT traversal begins.
-
-You could also use P2P to pull other broadcasters into your stream. No special configuration
-or servers required anymore to get sub-second co-streams.
-
-Broadcast Box acts as a [SFU][applied-webrtc-article]. This means that
-every client connects to Broadcast Box. No direct connection is established between broadcasters/viewers.
-If you want a direct connection between OBS and your browser see [OBS2Browser][obs-2-browser-repo].
-
-[applied-webrtc-article]: https://webrtcforthecurious.com/docs/08-applied-webrtc/#selective-forwarding-unit
-[obs-2-browser-repo]: https://github.com/Sean-Der/OBS2Browser
 
 ## Using
 
