@@ -5,8 +5,9 @@
 
 - [What is Broadcast Box](#what-is-broadcast-box)
 - [Using](#using)
-  - [Broadcasting](#broadcasting)
-  - [Broadcasting (GStreamer, CLI)](#broadcasting-gstreamer-cli)
+  - [OBS Broadcasting](#obs-broadcasting)
+  - [FFmpeg Broadcasting](#ffmpeg-broadcasting)
+  - [GStreamer Broadcasting](#gstreamer-broadcasting)
   - [Playback](#playback)
 - [Getting Started](#getting-started)
   - [Configuring](#configuring)
@@ -30,10 +31,10 @@ Want to contribute to the development of Broadcast Box? See [Contributing](./CON
 
 ## Using
 
-To use Broadcast Box you don't even have to run it locally! A instance of Broadcast Box
-is hosted at [b.siobud.com](https://b.siobud.com). If you wish to run it locally skip to [Getting Started](#getting-started)
+A public instance of Broadcast Box is hosted at [b.siobud.com](https://b.siobud.com). Feel free to use this as
+much as you want. Go to [Getting Started](#getting-started) for instructions on running it locally.
 
-### Broadcasting
+### OBS Broadcasting
 
 To use Broadcast Box with OBS you must set your output to WebRTC and set a proper URL + Stream Key.
 You may use any Stream Key you like. The same stream key is used for broadcasting and playback.
@@ -56,7 +57,21 @@ page will look like this.
 
 When you are ready to broadcast press `Start Streaming` and now time to watch!
 
-### Broadcasting (GStreamer, CLI)
+### FFmpeg Broadcasting
+The following broadcasts a test feed to https://b.siobud.com with a Bearer Token of `ffmpeg-test`
+
+```shell
+ffmpeg \
+  -re \
+  -f lavfi -i testsrc=size=1280x720 \
+  -f lavfi -i sine=frequency=440 \
+  -pix_fmt yuv420p -vcodec libx264 -profile:v baseline -r 25 -g 50 \
+  -acodec libopus -ar 48000 -ac 2 \
+  -f whip -authorization "ffmpeg-test" \
+  "https://b.siobud.com/api/whip"
+```
+
+### GStreamer Broadcasting
 
 See the example script [here](examples/gstreamer-broadcast.nu).
 
