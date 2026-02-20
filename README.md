@@ -96,20 +96,22 @@ Configurations can be made in [.env.production](./.env.production), although the
 
 React dependencies are installed by running `npm install` in the `web` directory and `npm run build` will build the frontend.
 
-If everything is successful, you should see the following:
+If everything is successful, you should see output similar to:
 
 ```console
 > broadcast-box@0.1.0 build
-> dotenv -e ../.env.production react-scripts build
+> vite build
 
-Creating an optimized production build...
-Compiled successfully.
-
-File sizes after gzip:
-
-  53.51 kB  build/static/js/main.12067218.js
-  2.27 kB   build/static/css/main.8738ee38.css
-...
+[dotenv@17.2.3] injecting env (0) from ../.env.development,../.env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+Target Backend: http://localhost:8080
+vite v6.4.1 building for production...
+✓ 724 modules transformed.
+build/index.html                       0.84 kB │ gzip:  0.49 kB
+build/assets/index-BZVYZNKC.css       20.37 kB │ gzip:  4.82 kB
+build/assets/index-BeQC1JnS.js         1.43 kB │ gzip:  0.69 kB
+build/assets/components-BcOZaJ_1.js   63.11 kB │ gzip: 16.08 kB
+build/assets/node-DpLsG32O.js        239.39 kB │ gzip: 75.76 kB
+✓ built in 601ms
 ```
 
 #### Backend
@@ -250,7 +252,7 @@ To prevent random users from streaming to your server, you can set the `WEBHOOK_
 If the request succeeds (meaning the stream key is accepted), broadcast-box redirects the stream to an url given
 by the external server, otherwise the streaming request is dropped.
 
-See [here](examples/webhook-server.go). For an example Webhook Server that only allows the stream `broadcastBoxRulez`
+See [here](examples/webhook-server/main.go). For an example Webhook Server that only allows the stream `broadcastBoxRulez`
 
 For a more advanced example of a webhook server implementation making use of separating the key for streaming from the key for watching, see the [broadcastbox-webhookserver](https://github.com/chrisingenhaag/broadcastbox-webhookserver) repository.
 
