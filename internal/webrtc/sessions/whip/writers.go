@@ -140,6 +140,9 @@ func (w *WHIPSession) videoWriter(remoteTrack *webrtc.TrackRemote, streamKey str
 			continue
 		}
 
+		rtpPkt.Extension = false
+		rtpPkt.Extensions = nil
+
 		track.PacketsReceived.Add(1)
 		bitrateWindowBytes += uint64(rtpRead)
 
