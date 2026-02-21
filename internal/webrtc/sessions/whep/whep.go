@@ -113,7 +113,13 @@ func (w *WHEPSession) SetAudioLayer(encodingID string) {
 // Sets the requested video layer for this WHEP session.
 func (w *WHEPSession) SetVideoLayer(encodingID string) {
 	log.Println("Setting Video Layer")
+
+	w.VideoLock.Lock()
 	w.VideoLayerCurrent.Store(encodingID)
+	w.videoLayerPriority = 0
+	w.videoLayerExplicit = encodingID != ""
+	w.VideoLock.Unlock()
+
 	w.IsWaitingForKeyframe.Store(true)
 	w.SendPLI()
 }
@@ -147,16 +153,34 @@ func (w *WHEPSession) updateVideoBitrateLocked(now time.Time) {
 	w.videoBitrateWindowBytes = w.VideoBytesWritten
 }
 
-func (w *WHEPSession) GetVideoLayerOrDefault(defaultLayer string) string {
+func (w *WHEPSession) GetVideoLayerOrDefault(defaultLayer string, defaultPriority int) string {
 	w.VideoLock.Lock()
 	defer w.VideoLock.Unlock()
 
 	currentLayer, _ := w.VideoLayerCurrent.Load().(string)
-	if currentLayer != "" {
+	if w.videoLayerExplicit {
 		return currentLayer
 	}
 
-	w.VideoLayerCurrent.Store(defaultLayer)
-	w.IsWaitingForKeyframe.Store(true)
-	return defaultLayer
+	if currentLayer == "" {
+		w.VideoLayerCurrent.Store(defaultLayer)
+		w.videoLayerPriority = defaultPriority
+		w.IsWaitingForKeyframe.Store(true)
+		return defaultLayer
+	}
+
+	if currentLayer == defaultLayer {
+		w.videoLayerPriority = defaultPriority
+		return currentLayer
+	}
+
+	// Lower numeric priority value means a better simulcast layer.
+	if w.videoLayerPriority == 0 || defaultPriority < w.videoLayerPriority {
+		w.VideoLayerCurrent.Store(defaultLayer)
+		w.videoLayerPriority = defaultPriority
+		w.IsWaitingForKeyframe.Store(true)
+		return defaultLayer
+	}
+
+	return currentLayer
 }

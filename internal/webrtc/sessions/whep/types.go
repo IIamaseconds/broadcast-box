@@ -22,7 +22,8 @@ type (
 		PeerConnectionLock sync.RWMutex
 		PeerConnection     *webrtc.PeerConnection
 
-		// Protects VideoTrack, VideoTimestamp, VideoPacketsWritten, VideoSequenceNumber
+		// Protects VideoTrack, VideoTimestamp, VideoPacketsWritten, VideoSequenceNumber,
+		// and auto video layer selection state.
 		VideoLock               sync.RWMutex
 		VideoTrack              *codecs.TrackMultiCodec
 		VideoTimestamp          uint32
@@ -34,6 +35,8 @@ type (
 		VideoPacketsDropped     atomic.Uint64
 		VideoSequenceNumber     uint16
 		VideoLayerCurrent       atomic.Value
+		videoLayerPriority      int
+		videoLayerExplicit      bool
 
 		// Protects AudioTrack, AudioTimestamp, AudioPacketsWritten, AudioSequenceNumber
 		AudioLock           sync.RWMutex

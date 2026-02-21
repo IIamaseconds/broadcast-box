@@ -17,7 +17,7 @@ import (
 	pionCodecs "github.com/pion/rtp/codecs"
 )
 
-func (w *WHIPSession) audioWriter(remoteTrack *webrtc.TrackRemote, streamKey string, peerConnection *webrtc.PeerConnection) {
+func (w *WHIPSession) audioWriter(remoteTrack *webrtc.TrackRemote, streamKey string) {
 	id := remoteTrack.RID()
 
 	if id == "" {
@@ -30,8 +30,6 @@ func (w *WHIPSession) audioWriter(remoteTrack *webrtc.TrackRemote, streamKey str
 		log.Println("AudioWriter.AddTrack.Error:", err)
 		return
 	}
-
-	track.Priority = w.getPrioritizedStreamingLayer(id, peerConnection.CurrentRemoteDescription().SDP)
 
 	rtpPkt := &rtp.Packet{}
 	rtpBuf := make([]byte, 1500)
@@ -183,7 +181,7 @@ func (w *WHIPSession) videoWriter(remoteTrack *webrtc.TrackRemote, streamKey str
 		}
 
 		for _, whepSession := range sessions {
-			if whepSession.GetVideoLayerOrDefault(id) != id {
+			if whepSession.GetVideoLayerOrDefault(id, track.Priority) != id {
 				continue
 			}
 

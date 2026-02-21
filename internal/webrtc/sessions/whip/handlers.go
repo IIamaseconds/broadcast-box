@@ -35,7 +35,7 @@ func (w *WHIPSession) onTrackHandler(peerConnection *webrtc.PeerConnection, stre
 
 		if strings.HasPrefix(remoteTrack.Codec().MimeType, "audio") {
 			// Handle audio stream
-			w.audioWriter(remoteTrack, streamKey, peerConnection)
+			w.audioWriter(remoteTrack, streamKey)
 		} else {
 			// Handle video stream
 			w.videoWriter(remoteTrack, streamKey, peerConnection)
