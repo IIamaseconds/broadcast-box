@@ -73,7 +73,7 @@ ffmpeg \
 
 ### GStreamer Broadcasting
 
-See the example script [here](examples/gstreamer-broadcast.nu).
+See the example script [here](examples/gstreamer-broadcast.sh).
 
 Can broadcast gstreamer's test sources, or pulsesrc+v4l2src
 
@@ -83,9 +83,9 @@ Use of example scripts:
 
 ```shell
 # testsrcs
-./examples/gstreamer-broadcast.nu http://localhost:8080/api/whip testStream1
+./examples/gstreamer-broadcast.sh http://localhost:8080/api/whip testStream1
 # v4l2src
-./examples/gstreamer-broadcast.nu http://localhost:8080/api/whip testStream1 v4l2
+./examples/gstreamer-broadcast.sh http://localhost:8080/api/whip testStream1 v4l2
 ```
 
 ### Playback
