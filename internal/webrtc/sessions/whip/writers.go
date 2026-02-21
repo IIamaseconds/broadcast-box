@@ -66,9 +66,7 @@ func (w *WHIPSession) audioWriter(remoteTrack *webrtc.TrackRemote, streamKey str
 		}
 
 		for _, whepSession := range sessions {
-			if whepSession.GetAudioLayerOrDefault(id) == id {
-				whepSession.SendAudioPacket(packet)
-			}
+			whepSession.SendAudioPacket(packet)
 		}
 	}
 }
@@ -184,28 +182,20 @@ func (w *WHIPSession) videoWriter(remoteTrack *webrtc.TrackRemote, streamKey str
 			sessions = sessionsAny.(map[string]*whep.WHEPSession)
 		}
 
-		sendVideoPacketToWHEP(
-			id,
-			sessions,
-			codecs.TrackPacket{
+		for _, whepSession := range sessions {
+			if whepSession.GetVideoLayerOrDefault(id) != id {
+				continue
+			}
+
+			whepSession.SendVideoPacket(codecs.TrackPacket{
 				Layer:        id,
 				Packet:       rtpPkt,
 				Codec:        codec,
 				IsKeyframe:   isKeyframe,
 				TimeDiff:     timeDiff,
 				SequenceDiff: sequenceDiff,
-			},
-		)
-	}
-}
-
-func sendVideoPacketToWHEP(id string, sessions map[string]*whep.WHEPSession, packet codecs.TrackPacket) {
-	for _, whepSession := range sessions {
-		if whepSession.GetVideoLayerOrDefault(id) != id {
-			continue
+			})
 		}
-
-		whepSession.SendVideoPacket(packet)
 	}
 }
 

@@ -147,19 +147,6 @@ func (w *WHEPSession) updateVideoBitrateLocked(now time.Time) {
 	w.videoBitrateWindowBytes = w.VideoBytesWritten
 }
 
-func (w *WHEPSession) GetAudioLayerOrDefault(defaultLayer string) string {
-	w.AudioLock.Lock()
-	defer w.AudioLock.Unlock()
-
-	currentLayer, _ := w.AudioLayerCurrent.Load().(string)
-	if currentLayer != "" {
-		return currentLayer
-	}
-
-	w.AudioLayerCurrent.Store(defaultLayer)
-	return defaultLayer
-}
-
 func (w *WHEPSession) GetVideoLayerOrDefault(defaultLayer string) string {
 	w.VideoLock.Lock()
 	defer w.VideoLock.Unlock()
