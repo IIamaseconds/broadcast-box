@@ -74,6 +74,7 @@ function BrowserBroadcaster() {
 
 			stream = mediaStream
 			videoRef.current!.srcObject = mediaStream
+			const isFirefox = navigator.userAgent.toLowerCase().includes('firefox')
 
 			const encodingPrefix = "Web"
 			mediaStream
@@ -86,7 +87,7 @@ function BrowserBroadcaster() {
 					} else {
 						peerConnectionRef.current!.addTransceiver(mediaStreamTrack, {
 							direction: 'sendonly',
-							sendEncodings: [
+							sendEncodings: isFirefox ? undefined : [
 								{
 									rid: encodingPrefix + 'High',
 								},
